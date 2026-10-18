@@ -15,6 +15,7 @@ Use Clang to compile.
 x86-64 Linux portable.
 
 ```
+cd src
 make halley -j
 ./halley &
 ```
