@@ -171,34 +171,6 @@ static int parse(FILE *file, char *restrict words, void (*op)(char *mem, const c
 	return 0;
 }
 
-static volatile FILE *gl_blacklist_file = NULL;
-
-static void sigsegv_handler(int sig)
-{
-	(void)sig;
-	if (gl_blacklist_file != NULL) {
-		funlockfile((FILE *)gl_blacklist_file);
-		fclose((FILE *)gl_blacklist_file);
-	}
-	fflush(stdout);
-	fprintf(stderr, "Caught SIGSEGV\n");
-	_exit(1);
-}
-
-static int set_signal_hander(void (*f)(int), int signo)
-{
-	struct sigaction act;
-
-	memset(&act, 0, sizeof act);
-	act.sa_handler = f;
-
-	if (0 != sigaction(signo, &act, NULL)) {
-		return 1;
-	}
-
-	return 0;
-}
-
 int main(int argc, char **argv)
 {
 	FILE *blacklist_file;
@@ -208,11 +180,6 @@ int main(int argc, char **argv)
 	char *last_p;
 
 	if (argc < 2) {
-		fprintf(stderr, "Failed %s:%d", __FILE__, __LINE__);
-		return 1;
-	}
-
-	if (0 != set_signal_hander(sigsegv_handler, SIGSEGV)) {
 		fprintf(stderr, "Failed %s:%d", __FILE__, __LINE__);
 		return 1;
 	}
@@ -248,7 +215,6 @@ int main(int argc, char **argv)
 	}
 
 	flockfile(blacklist_file);
-	gl_blacklist_file = blacklist_file;
 
 	if (0 != parse(blacklist_file, words, erase)) {
 		funlockfile(blacklist_file);
@@ -259,7 +225,6 @@ int main(int argc, char **argv)
 	funlockfile(blacklist_file);
 	fclose(blacklist_file);
 
-	gl_blacklist_file = NULL;
 	s = words;
 	do {
 		if (*s != 0 && *s != 1) {
