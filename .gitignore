@@ -1,0 +1,7 @@
+*.out
+undef_generator
+undef.c
+*.o
+halley
+priv
+deps.mk

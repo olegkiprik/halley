@@ -1,0 +1,16 @@
+#undef S8
+#undef S16
+#undef S32
+#undef S64
+#undef S128
+#undef U8
+#undef U16
+#undef U32
+#undef U64
+#undef U128
+#undef F5E11S
+#undef F8E8S
+#undef F8E24S
+#undef F11E53S
+#undef F32
+#undef F64
