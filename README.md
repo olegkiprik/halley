@@ -1,6 +1,6 @@
 ## Halley's DAW
 
-### Stage of development: real-time pitchshifter
+### Stage of development: real-time pitch shifter
 
 Audio loopback, turn volume down!
 
@@ -16,7 +16,7 @@ x86-64 Linux portable.
 
 ```
 cd src
-make halley -j
+./compile_with_make.sh
 ./halley &
 ```
 
