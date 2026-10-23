@@ -8,7 +8,7 @@
 CPU_ARCH = x86-64
 CC = clang
 COMMON_FLAGS = -fstrict-aliasing -fno-builtin
-C_FLAGS = $(COMMON_FLAGS) -pipe -std=c17 -DNDEBUG -mcx16 -march=$(CPU_ARCH) -USIMD_VEX -DNO_SIMD_1024 -DNO_SIMD_512 -DNO_SIMD_256 -UNO_SIMD_128 -UNO_SIMD_64 -Wall -Wextra -Wshadow -Wno-pedantic -Wstrict-aliasing -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Wno-unused-function -Wno-ignored-attributes -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Werror=vla -U_FORTIFY_SOURCE -fvisibility=hidden -Wa,--noexecstack -fno-stack-protector -fno-ident -fno-asynchronous-unwind-tables -fno-unwind-tables -O3 -ffast-math -fno-PIC -fno-pie
+C_FLAGS = $(COMMON_FLAGS) -pipe -std=c17 -UNDEBUG -mcx16 -march=$(CPU_ARCH) -USIMD_VEX -DNO_SIMD_1024 -DNO_SIMD_512 -DNO_SIMD_256 -UNO_SIMD_128 -UNO_SIMD_64 -Wall -Wextra -Wshadow -Wno-pedantic -Wstrict-aliasing -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Wno-unused-function -Wno-ignored-attributes -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Werror=vla -Werror=trigraphs -Werror=unknown-escape-sequence -U_FORTIFY_SOURCE -fvisibility=hidden -Wa,--noexecstack -fno-stack-protector -fno-ident -fno-asynchronous-unwind-tables -fno-unwind-tables -O3 -ffast-math -fno-PIC -fno-pie
 ASM_FLAGS = -pipe -Wall -Wextra -Wshadow -Wno-pedantic -fno-PIC -fno-pie -Wa,--noexecstack
 
 amd64/elf_start.o: amd64/elf_start.asm
@@ -20,7 +20,7 @@ amd64/elf_trampo.o: amd64/elf_trampo.asm
 launcher.o: launcher.c
 	$(CC) $(C_FLAGS) -c -o $@ $<
 main.o: main.c
-	$(CC) $(C_FLAGS) -DPRIV_ATOMIC_REQUIRED_SIZE_PREVENT_ERROR=16 -c -o $@ $<
+	$(CC) $(C_FLAGS) -URGFW_DEBUG -URGFW_PRINT_ERRORS -UMA_DEBUG_OUTPUT -UMA_NO_SSE -UMA_NO_SSE2 -DMA_NO_AVX -DMA_NO_AVX2 -DMA_NO_NEON -DPRIV_ATOMIC_REQUIRED_SIZE_PREVENT_ERROR=16 -c -o $@ $<
 rt_audio_callback_1_1_10.o: rt_audio_callback_1_1_10.c
 	$(CC) $(C_FLAGS) -c -o $@ $<
 rt_audio_callback_1_2_10.o: rt_audio_callback_1_2_10.c

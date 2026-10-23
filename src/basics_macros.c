@@ -521,6 +521,12 @@
 		*(pptr) = __builtin_assume_aligned(*(pptr), alignment, 0); \
 	} while (0 != 0)
 #endif
+#ifndef MAY_ALIAS
+#define MAY_ALIAS __attribute__((__may_alias__))
+#endif
+#ifndef PTR_ALIAS
+#define PTR_ALIAS(type, x) ((type)(x))
+#endif
 /*
  * use newer clang
  *

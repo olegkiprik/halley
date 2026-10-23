@@ -183,6 +183,12 @@ static BOOL_OUT init_all_pfn(void *c, void *p)
 	failed |= (int)(tmp == NULL);
 	my_errno_location = (void *)tmp;
 
+#if defined(RGFW_DEBUG) | defined(RGFW_PRINT_ERRORS) | defined(MA_DEBUG_OUTPUT)
+	tmp = dlsym(c, "printf");
+	failed |= (int)(tmp == NULL);
+	my_printf = (void *)tmp;
+#endif
+
 	return failed;
 }
 
@@ -1575,11 +1581,6 @@ static void priv_wrapped_free(void *ptr)
 STATIC_ASSERT(ATOMIC_ALWAYS_LOCK_FREE(PRIV_ATOMIC_REQUIRED_SIZE_PREVENT_ERROR));
 
 #include "fft.c"
-
-#if defined(DO_NOT_BLACKLIST)
-#if 1
-#endif "DO_NOT_BLACKLIST is defined"
-#endif
 
 /*
  * Copyright 2026 Oleh Kiprik

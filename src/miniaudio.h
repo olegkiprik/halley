@@ -13538,10 +13538,10 @@ static void ma__free_default(void* p, void* pUserData)
 static ma_allocation_callbacks ma_allocation_callbacks_init_default(void)
 {
     ma_allocation_callbacks callbacks;
-    callbacks.pUserData = NULL;
-    callbacks.onMalloc  = ma__malloc_default;
-    callbacks.onRealloc = ma__realloc_default;
-    callbacks.onFree    = ma__free_default;
+    callbacks.pUserData = NULL; // TODO
+    callbacks.onMalloc  = NULL; // ma__malloc_default;
+    callbacks.onRealloc = NULL; // ma__realloc_default;
+    callbacks.onFree    = NULL; // ma__free_default;
 
     return callbacks;
 }
@@ -13611,7 +13611,7 @@ MA_API const char* ma_log_level_to_string(ma_uint32 logLevel)
 #define MA_ANDROID_LOG_TAG  "miniaudio"
 #endif
 
-void ma_log_callback_debug(void* pUserData, ma_uint32 level, const char* pMessage)
+MA_API void ma_log_callback_debug(void* pUserData, ma_uint32 level, const char* pMessage)
 {
     (void)pUserData;
 
@@ -13624,7 +13624,8 @@ void ma_log_callback_debug(void* pUserData, ma_uint32 level, const char* pMessag
     #else
     {
         /* Everything else. */
-        printf("%s: %s", ma_log_level_to_string(level), pMessage);
+        // TODO
+        MA_PRINTF_2("%s: %s", ma_log_level_to_string(level), pMessage);
     }
     #endif
 }
@@ -59003,6 +59004,11 @@ MA_API const char* ma_result_description(ma_result result)
 
 MA_API void* ma_malloc(size_t sz, const ma_allocation_callbacks* pAllocationCallbacks)
 {
+    // TODO
+    (void)pAllocationCallbacks;
+    return malloc(sz);
+
+#if 0
     if (pAllocationCallbacks != NULL) {
         if (pAllocationCallbacks->onMalloc != NULL) {
             return pAllocationCallbacks->onMalloc(sz, pAllocationCallbacks->pUserData);
@@ -59012,20 +59018,36 @@ MA_API void* ma_malloc(size_t sz, const ma_allocation_callbacks* pAllocationCall
     } else {
         return ma__malloc_default(sz, NULL);
     }
+#endif
 }
 
 MA_API void* ma_calloc(size_t sz, const ma_allocation_callbacks* pAllocationCallbacks)
 {
+    // TODO
+    (void)pAllocationCallbacks;
+    void* p2 = malloc(sz);
+    if (p2 != NULL) {
+        MA_ZERO_MEMORY(p2, sz);
+    }
+    return p2;
+
+#if 0
     void* p = ma_malloc(sz, pAllocationCallbacks);
     if (p != NULL) {
         MA_ZERO_MEMORY(p, sz);
     }
 
     return p;
+#endif
 }
 
 MA_API void* ma_realloc(void* p, size_t sz, const ma_allocation_callbacks* pAllocationCallbacks)
 {
+    // TODO
+    (void)pAllocationCallbacks;
+    return realloc(p, sz);
+
+#if 0
     if (pAllocationCallbacks != NULL) {
         if (pAllocationCallbacks->onRealloc != NULL) {
             return pAllocationCallbacks->onRealloc(p, sz, pAllocationCallbacks->pUserData);
@@ -59035,10 +59057,16 @@ MA_API void* ma_realloc(void* p, size_t sz, const ma_allocation_callbacks* pAllo
     } else {
         return ma__realloc_default(p, sz, NULL);
     }
+#endif
 }
 
 MA_API void ma_free(void* p, const ma_allocation_callbacks* pAllocationCallbacks)
 {
+    // TODO
+    (void)pAllocationCallbacks;
+    return free(p);
+
+#if 0
     if (p == NULL) {
         return;
     }
@@ -59052,6 +59080,7 @@ MA_API void ma_free(void* p, const ma_allocation_callbacks* pAllocationCallbacks
     } else {
         ma__free_default(p, NULL);
     }
+#endif
 }
 
 MA_API void* ma_aligned_malloc(size_t sz, size_t alignment, const ma_allocation_callbacks* pAllocationCallbacks)

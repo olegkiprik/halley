@@ -149,6 +149,8 @@ static const char *priv_extra_naive_strstr(const char *haystack, const char *nee
 #include "foreign_dlopen.c"
 #endif
 
+void (*my_pthread_mutex_try_lock)(void);
+void (*my_pthread_mutex_unlock)(void);
 void (*my_pthread_attr_init)(void);
 void (*my_pthread_attr_destroy)(void);
 void (*my_pthread_cond_init)(void);
@@ -159,8 +161,6 @@ void (*my_pthread_create)(void);
 void (*my_pthread_attr_setschedpolicy)(void);
 void (*my_pthread_attr_setstacksize)(void);
 void (*my_pthread_mutex_lock)(void);
-void (*my_pthread_mutex_try_lock)(void);
-void (*my_pthread_mutex_unlock)(void);
 void (*my_pthread_mutex_init)(void);
 void (*my_pthread_mutex_destroy)(void);
 void (*my_pthread_join)(void);
@@ -168,25 +168,27 @@ int (*my_pthread_attr_setschedparam)(pthread_attr_t *restrict, const struct sche
 int (*my_pthread_attr_getschedparam)(const pthread_attr_t *restrict, struct sched_param *restrict);
 int (*my_pthread_attr_setinheritsched)(pthread_attr_t *, int);
 
-int (*my_poll)(struct pollfd *, nfds_t, int);
-ssize_t (*my_read)(int, void *, size_t);
-ssize_t (*my_write)(int, const void *, size_t);
-int (*my_clock_gettime)(clockid_t, struct timespec *);
-int (*my_pipe)(int *);
-int (*my_fcntl)(int, int, ...);
-long (*my_strtol)(const char *restrict, char **restrict, int);
-double (*my_atof)(const char *);
-int (*my_close)(int);
-int (*my_eventfd)(unsigned int, int);
-int (*my_sched_getscheduler)(int);
-int (*my_sched_get_priority_max)(int);
-int (*my_sched_get_priority_min)(int);
-int (*my_fileno)(FILE *);
-int (*my_strncmp)(const char *a, const char *b, size_t n);
-int (*my_vsnprintf)(char *restrict, size_t, const char *restrict, __builtin_va_list);
-int (*my_snprintf)(char *restrict, size_t, const char *restrict, ...);
-void *(*my_memset)(void *, int, size_t);
 int *(*my_errno_location)(void);
+
+static int (*my_poll)(struct pollfd *, nfds_t, int);
+static ssize_t (*my_read)(int, void *, size_t);
+static ssize_t (*my_write)(int, const void *, size_t);
+static int (*my_clock_gettime)(clockid_t, struct timespec *);
+static int (*my_pipe)(int *);
+static int (*my_fcntl)(int, int, ...);
+static long (*my_strtol)(const char *restrict, char **restrict, int);
+static double (*my_atof)(const char *);
+static int (*my_close)(int);
+static int (*my_eventfd)(unsigned int, int);
+static int (*my_sched_getscheduler)(int);
+static int (*my_sched_get_priority_max)(int);
+static int (*my_sched_get_priority_min)(int);
+static int (*my_fileno)(FILE *);
+static int (*my_strncmp)(const char *a, const char *b, size_t n);
+static int (*my_vsnprintf)(char *restrict, size_t, const char *restrict, __builtin_va_list);
+static int (*my_snprintf)(char *restrict, size_t, const char *restrict, ...);
+static int (*my_printf)(const char *restrict, ...);
+static void *(*my_memset)(void *, int, size_t);
 
 #define dlopen(filename, flags) (*(void *(*)(const char *, int))my_dlopen)(filename, flags)
 #define dlsym(handle, symbol) (*(void *(*)(void *restrict, const char *restrict))my_dlsym)(handle, symbol)
@@ -255,6 +257,7 @@ static void priv_wrapped_free(void *ptr);
 #define memcpy(x, y, z) priv_extra_naive_memcpy((x), (y), (z))
 #define strncmp(x, y, z) (*my_strncmp)(x, y, z)
 
+#define MA_PRINTF_2(x, y, z) (*my_printf)(x, y, z)
 #define MINIAUDIO_IMPLEMENTATION
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
 #define MA_ENABLE_ALSA
@@ -268,13 +271,6 @@ static void priv_wrapped_free(void *ptr);
 #define MA_NO_MP3
 #define MA_NO_GENERATION
 #define MA_API static
-#if 0
-#define MA_NO_SSE
-#define MA_NO_SSE2
-#define MA_NO_AVX
-#define MA_NO_AVX2
-#define MA_NO_NEON
-#endif
 #include "miniaudio.h"
 #undef MINIAUDIO_IMPLEMENTATION
 #undef MA_ENABLE_ONLY_SPECIFIC_BACKENDS
@@ -289,6 +285,12 @@ static void priv_wrapped_free(void *ptr);
 #undef MA_NO_MP3
 #undef MA_NO_GENERATION
 #undef MA_API
+#undef MA_NO_SSE
+#undef MA_NO_SSE2
+#undef MA_NO_AVX
+#undef MA_NO_AVX2
+#undef MA_NO_NEON
+#undef MA_PRINTF_2
 
 #define XDL_IMPLEMENTATION
 #include "xdl.h"
@@ -302,10 +304,6 @@ static void priv_wrapped_free(void *ptr);
 #define RGFW_USE_XDL
 #define RGFW_ALLOC_DROPFILES
 #define RGFW_IMPLEMENTATION
-#define RGFW_PRINT_ERRORS
-#if 0
-#define RGFW_DEBUG
-#endif
 #define GL_SILENCE_DEPRECATION
 #define RGFW_API static
 #include "rgfw.h"
@@ -320,7 +318,7 @@ static void priv_wrapped_free(void *ptr);
 #undef RGFW_PRINTF_0
 #undef RGFW_SNPRINTF_5
 #undef RGFW_SNPRINTF_1
+#undef RGFW_DEBUG
+#undef RGFW_PRINT_ERRORS
 
 #include <GL/gl.h>
-
-#define DO_NOT_BLACKLIST

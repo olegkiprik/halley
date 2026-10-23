@@ -124,50 +124,71 @@ static void erase(char *restrict mem, const char *restrict word)
 	}
 }
 
-static int parse(FILE *file, char *restrict words, void (*op)(char *mem, const char *word))
+typedef enum enum_state_ {
+	STATE_IDENT,
+	STATE_NOT_IDENT,
+	STATE_NONE,
+} enum_state;
+
+#ifndef RARELY
+#define RARELY(x) __builtin_expect_with_probability(x, 0, 0.9)
+#endif
+
+#ifndef OFTEN
+#define OFTEN(x) __builtin_expect_with_probability(x, 1, 0.9)
+#endif
+
+int parse(FILE *file, char *restrict words, void (*op)(char *mem, const char *word))
 {
 	char buf[4096];
 	char *p;
-	int state;
+	enum_state state;
 	int r;
 
 	p = buf;
-	state = 0;
+	state = STATE_NONE;
 
 	while (1 == 1) {
 		r = fread_unlocked(p, 1, 1, file);
-		if (r != 1) {
-			if (state == 1) {
-				*p = '\0';
-				(*op)(words, buf);
-			}
-			break;
+		if (RARELY(r != 1)) {
+			goto l_finish;
 		}
-		if ((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '_' || (*p >= '0' && *p <= '9')) {
-			if (state == 0) {
-				if (*p < '0' || *p > '9') {
-					state = 1;
-					++p;
-				}
-			} else if (state == 1) {
-				if (p - buf == sizeof buf - 1) {
-					return 1;
-				}
-				++p;
-			}
-		} else {
-			if (state == 0) {
 
-			} else if (state == 1) {
+		int az_us = (int)(*p == '_') | ((int)(*p >= 'a') & (int)(*p <= 'z')) | ((int)(*p >= 'A') & (int)(*p <= 'Z'));
+		int digit = (int)(*p >= '0') & (int)(*p <= '9');
+		int alphanum = az_us | digit;
+		int other = 1 ^ alphanum;
+
+		if (state == STATE_IDENT) {
+			if (RARELY(other)) {
 				*p = '\0';
 				p = buf;
-				state = 0;
 				(*op)(words, buf);
+			} else {
+				if (RARELY(p - buf == sizeof buf - 1)) {
+					goto l_failure;
+				}
 			}
 		}
+
+		int ident_curr = az_us & (int)(state == STATE_NONE) | alphanum & (int)(state == STATE_IDENT);
+
+		p += ident_curr;
+
+		state = STATE_NONE &
+			    -other |
+			(STATE_NOT_IDENT ^ (STATE_NOT_IDENT ^ STATE_IDENT) & -ident_curr) &
+			    -alphanum;
 	}
 
+l_finish:
+	if (state == STATE_IDENT) {
+		*p = '\0';
+		(*op)(words, buf);
+	}
 	return 0;
+l_failure:
+	return 1;
 }
 
 int main(int argc, char **argv)
