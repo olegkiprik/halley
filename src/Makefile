@@ -11,11 +11,11 @@ COMMON_FLAGS = -fstrict-aliasing -fno-builtin
 C_FLAGS = $(COMMON_FLAGS) -pipe -std=c17 -UNDEBUG -mcx16 -march=$(CPU_ARCH) -USIMD_VEX -DNO_SIMD_1024 -DNO_SIMD_512 -DNO_SIMD_256 -UNO_SIMD_128 -UNO_SIMD_64 -Wall -Wextra -Wshadow -Wno-pedantic -Wstrict-aliasing -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Wno-unused-function -Wno-ignored-attributes -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Werror=vla -Werror=trigraphs -Werror=unknown-escape-sequence -U_FORTIFY_SOURCE -fvisibility=hidden -Wa,--noexecstack -fno-stack-protector -fno-ident -fno-asynchronous-unwind-tables -fno-unwind-tables -O3 -ffast-math -fno-PIC -fno-pie
 ASM_FLAGS = -pipe -Wall -Wextra -Wshadow -Wno-pedantic -fno-PIC -fno-pie -Wa,--noexecstack
 
-amd64/elf_start.o: amd64/elf_start.asm
+amd64/elf_start.o: amd64/elf_start.s
 	$(CC) $(ASM_FLAGS) -c -o $@ $<
-amd64/elf_fdlentry.o: amd64/elf_fdlentry.asm
+amd64/elf_fdlentry.o: amd64/elf_fdlentry.s
 	$(CC) $(ASM_FLAGS) -c -o $@ $<
-amd64/elf_trampo.o: amd64/elf_trampo.asm
+amd64/elf_trampo.o: amd64/elf_trampo.s
 	$(CC) $(ASM_FLAGS) -c -o $@ $<
 launcher.o: launcher.c
 	$(CC) $(C_FLAGS) -c -o $@ $<

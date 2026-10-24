@@ -138,7 +138,7 @@ typedef enum enum_state_ {
 #define OFTEN(x) __builtin_expect_with_probability(x, 1, 0.9)
 #endif
 
-int parse(FILE *file, char *restrict words, void (*op)(char *mem, const char *word))
+static int parse(FILE *file, char *restrict words, void (*op)(char *mem, const char *word))
 {
 	char buf[4096];
 	char *p;
