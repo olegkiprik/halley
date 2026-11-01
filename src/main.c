@@ -434,10 +434,10 @@ F32 fft_buffer_processed[(1uLL << MAX_K) * 2];
 OPTIONAL_ALIGNAS(SIMD_NBYTES)
 F32 buffer_for_visualization[1uLL << MAX_K];
 
-#define REQUESTED_NR_PERIODS 2
+#define REQUESTED_N_PERIODS 2
 
-#define GENERATE_DECLARE_rt_audio_callback(in, out, fft_k, i_sizeofbits, o_sizeofbits, nr_active_channels, nr_all_channels)    \
-	void rt_audio_callback_##in##_##out##_##fft_k##_##nr_active_channels##_##nr_all_channels(ma_device *restrict p_device, \
+#define GENERATE_DECLARE_rt_audio_callback(in, out, fft_k, i_sizeofbits, o_sizeofbits, n_active_channels, n_all_channels)    \
+	void rt_audio_callback_##in##_##out##_##fft_k##_##n_active_channels##_##n_all_channels(ma_device *restrict p_device, \
 												 void *restrict p_output,      \
 												 const void *restrict p_input, \
 												 ma_uint32 frame_count_ma_param)
@@ -722,13 +722,13 @@ static ALWAYS_INLINE int submain(void)
 	S32 argc = gl_argc;
 	char **argv = gl_argv;
 
-	U32 nr_active_channels = 1;
+	U32 n_active_channels = 1;
 
 	if (argc >= 3) {
 		if (argv[2][0] == '1') {
-			nr_active_channels = 1;
+			n_active_channels = 1;
 		} else if (argv[2][0] == '2') {
-			nr_active_channels = 2;
+			n_active_channels = 2;
 		}
 	}
 
@@ -788,11 +788,11 @@ static ALWAYS_INLINE int submain(void)
 
 	ma_device_config_init(&deviceConfig, ma_device_type_playback | ma_device_type_capture);
 
-	deviceConfig.playback.channels = REQUESTED_PLAYBACK_NR_CHANNELS;
+	deviceConfig.playback.channels = REQUESTED_PLAYBACK_N_CHANNELS;
 	deviceConfig.dataCallback = rt_audio_callback_dummy;
 	deviceConfig.pUserData = NULL;
 	deviceConfig.noFixedSizedCallback = MA_TRUE;
-	deviceConfig.periods = REQUESTED_NR_PERIODS;
+	deviceConfig.periods = REQUESTED_N_PERIODS;
 	deviceConfig.noClip = MA_TRUE;
 	deviceConfig.performanceProfile = ma_performance_profile_low_latency;
 	deviceConfig.noPreSilencedOutputBuffer = MA_TRUE;
@@ -813,7 +813,7 @@ static ALWAYS_INLINE int submain(void)
 		       (int)(dummy_device.capture.internalSampleRate != 96000) &
 		       (int)(dummy_device.capture.internalSampleRate != 192000) &
 		       (int)(dummy_device.capture.internalSampleRate != 384000) |
-		   (int)(dummy_device.playback.internalChannels != REQUESTED_PLAYBACK_NR_CHANNELS) |
+		   (int)(dummy_device.playback.internalChannels != REQUESTED_PLAYBACK_N_CHANNELS) |
 		   (int)(dummy_device.capture.internalChannels != 1) & (int)(dummy_device.capture.internalChannels != 2) |
 		   (int)(dummy_device.playback.internalFormat != ma_format_s16) &
 		       (int)(dummy_device.playback.internalFormat != ma_format_s24) &
@@ -823,8 +823,8 @@ static ALWAYS_INLINE int submain(void)
 		       (int)(dummy_device.capture.internalFormat != ma_format_s24) &
 		       (int)(dummy_device.capture.internalFormat != ma_format_s32) &
 		       (int)(dummy_device.capture.internalFormat != ma_format_f32) |
-		   (int)(dummy_device.playback.internalPeriods != REQUESTED_NR_PERIODS) |
-		   (int)(dummy_device.capture.internalPeriods != REQUESTED_NR_PERIODS))) {
+		   (int)(dummy_device.playback.internalPeriods != REQUESTED_N_PERIODS) |
+		   (int)(dummy_device.capture.internalPeriods != REQUESTED_N_PERIODS))) {
 		failure_print_string("line ");
 		failure_print_dec_u64(__LINE__);
 		failure_print_string("\nactual data:\ndevice.playback.internalSampleRate = ");
@@ -833,7 +833,7 @@ static ALWAYS_INLINE int submain(void)
 		failure_print_dec_u64(dummy_device.capture.internalSampleRate);
 		failure_print_string("\ndevice.playback.internalChannels = ");
 		failure_print_dec_u64(dummy_device.playback.internalChannels);
-		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_PLAYBACK_NR_CHANNELS) "\ndevice.capture.internalChannels = ");
+		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_PLAYBACK_N_CHANNELS) "\ndevice.capture.internalChannels = ");
 		failure_print_dec_u64(dummy_device.capture.internalChannels);
 		failure_print_string("\ndevice.playback.internalFormat = ");
 		failure_print_dec_u64(dummy_device.playback.internalFormat);
@@ -845,9 +845,9 @@ static ALWAYS_INLINE int submain(void)
 		failure_print_dec_u64(ma_format_f32);
 		failure_print_string("\ndevice.playback.internalPeriods = ");
 		failure_print_dec_u64(dummy_device.playback.internalPeriods);
-		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_NR_PERIODS) "\ndevice.capture.internalPeriods = ");
+		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_N_PERIODS) "\ndevice.capture.internalPeriods = ");
 		failure_print_dec_u64(dummy_device.capture.internalPeriods);
-		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_NR_PERIODS) "\ndevice.playback.internalPeriodSizeInFrames = ");
+		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_N_PERIODS) "\ndevice.playback.internalPeriodSizeInFrames = ");
 		failure_print_dec_u64(dummy_device.playback.internalPeriodSizeInFrames);
 		failure_print_string("\ndevice.capture.internalPeriodSizeInFrames = ");
 		failure_print_dec_u64(dummy_device.capture.internalPeriodSizeInFrames);
@@ -928,16 +928,16 @@ static ALWAYS_INLINE int submain(void)
 			break;
 		}
 
-		nr_active_channels = MIN(nr_active_channels, dummy_device_capture_internalChannels);
-		nr_active_channels = MIN(nr_active_channels, dummy_device_playback_internalChannels);
+		n_active_channels = MIN(n_active_channels, dummy_device_capture_internalChannels);
+		n_active_channels = MIN(n_active_channels, dummy_device_playback_internalChannels);
 
-		assert(dummy_device_playback_internalChannels == REQUESTED_PLAYBACK_NR_CHANNELS);
+		assert(dummy_device_playback_internalChannels == REQUESTED_PLAYBACK_N_CHANNELS);
 
-		if (nr_active_channels == 1 && dummy_device_capture_internalChannels == 1) {
+		if (n_active_channels == 1 && dummy_device_capture_internalChannels == 1) {
 			channelconf_idx = 0;
-		} else if (nr_active_channels == 1 && dummy_device_capture_internalChannels == 2) {
+		} else if (n_active_channels == 1 && dummy_device_capture_internalChannels == 2) {
 			channelconf_idx = 1;
-		} else if (nr_active_channels == 2 && dummy_device_capture_internalChannels == 2 && dummy_device_playback_internalChannels == 2) {
+		} else if (n_active_channels == 2 && dummy_device_capture_internalChannels == 2 && dummy_device_playback_internalChannels == 2) {
 			channelconf_idx = 2;
 		} else {
 			NEVER(0);
@@ -1150,7 +1150,7 @@ static ALWAYS_INLINE int submain(void)
 
 		deviceConfig.periodSizeInFrames = (1 << 10) * (1 << sample_rate_idx);
 		deviceConfig.sampleRate = dummy_device_playback_internalSampleRate;
-		deviceConfig.playback.channels = REQUESTED_PLAYBACK_NR_CHANNELS;
+		deviceConfig.playback.channels = REQUESTED_PLAYBACK_N_CHANNELS;
 		deviceConfig.capture.channels = dummy_device_capture_internalChannels;
 		deviceConfig.playback.format = dummy_device_playback_internalFormat;
 		deviceConfig.capture.format = dummy_device_capture_internalFormat;
@@ -1165,12 +1165,12 @@ static ALWAYS_INLINE int submain(void)
 
 	if (RARELY((int)(device.playback.internalSampleRate != device.capture.internalSampleRate) |
 		   (int)(device.capture.internalSampleRate != dummy_device_capture_internalSampleRate) |
-		   (int)(device.playback.internalChannels != REQUESTED_PLAYBACK_NR_CHANNELS) |
+		   (int)(device.playback.internalChannels != REQUESTED_PLAYBACK_N_CHANNELS) |
 		   (int)(device.capture.internalChannels != dummy_device_capture_internalChannels) |
 		   (int)(device.playback.internalFormat != dummy_device_playback_internalFormat) |
 		   (int)(device.capture.internalFormat != dummy_device_capture_internalFormat) |
-		   (int)(device.playback.internalPeriods != REQUESTED_NR_PERIODS) |
-		   (int)(device.capture.internalPeriods != REQUESTED_NR_PERIODS))) {
+		   (int)(device.playback.internalPeriods != REQUESTED_N_PERIODS) |
+		   (int)(device.capture.internalPeriods != REQUESTED_N_PERIODS))) {
 		failure_print_string("line ");
 		failure_print_dec_u64(__LINE__);
 		failure_print_string("\nactual data:\ndevice.playback.internalSampleRate = ");
@@ -1181,7 +1181,7 @@ static ALWAYS_INLINE int submain(void)
 		failure_print_dec_u64(dummy_device_capture_internalSampleRate);
 		failure_print_string("\ndevice.playback.internalChannels = ");
 		failure_print_dec_u64(device.playback.internalChannels);
-		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_PLAYBACK_NR_CHANNELS) "\ndevice.capture.internalChannels = ");
+		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_PLAYBACK_N_CHANNELS) "\ndevice.capture.internalChannels = ");
 		failure_print_dec_u64(device.capture.internalChannels);
 		failure_print_string("\ndevice.playback.internalFormat = ");
 		failure_print_dec_u64(device.playback.internalFormat);
@@ -1189,9 +1189,9 @@ static ALWAYS_INLINE int submain(void)
 		failure_print_dec_u64(device.capture.internalFormat);
 		failure_print_string("\ndevice.playback.internalPeriods = ");
 		failure_print_dec_u64(device.playback.internalPeriods);
-		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_NR_PERIODS) "\ndevice.capture.internalPeriods = ");
+		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_N_PERIODS) "\ndevice.capture.internalPeriods = ");
 		failure_print_dec_u64(device.capture.internalPeriods);
-		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_NR_PERIODS) "\ndevice.playback.internalPeriodSizeInFrames = ");
+		failure_print_string(", requested " STRINGIZE_VALUE(REQUESTED_N_PERIODS) "\ndevice.playback.internalPeriodSizeInFrames = ");
 		failure_print_dec_u64(device.playback.internalPeriodSizeInFrames);
 		failure_print_string("\ndevice.capture.internalPeriodSizeInFrames = ");
 		failure_print_dec_u64(device.capture.internalPeriodSizeInFrames);

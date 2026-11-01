@@ -16,11 +16,11 @@ x86-64 Linux portable.
 
 ```
 cd src
-./compile_with_make.sh NR_CORES
+./compile_with_make.sh N_THREADS
 ./halley &
 ```
 
-If unsure, replace NR\_CORES with 4.
+If unsure, replace N\_THREADS with 2.
 
 ### How to use
 

@@ -22,7 +22,7 @@
 typedef struct ma_device ma_device;
 typedef U32 ma_uint32;
 
-STATIC_ASSERT(REQUESTED_PLAYBACK_NR_CHANNELS <= 2);
+STATIC_ASSERT(REQUESTED_PLAYBACK_N_CHANNELS <= 2);
 extern OPTIONAL_ALIGNAS(SIMD_NBYTES) F32 fft_buffer_original[(1uLL << MAX_K) * 2];  /* soa 2 channels */
 extern OPTIONAL_ALIGNAS(SIMD_NBYTES) F32 fft_buffer_processed[(1uLL << MAX_K) * 2]; /* soa 2 channels */
 extern OPTIONAL_ALIGNAS(SIMD_NBYTES) F32 buffer_for_visualization[1uLL << MAX_K];
@@ -109,35 +109,35 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 	F32 *capture_iter;
 
 	while (*p_fft_phase_frames % nn4 + frame_count_iter >= nn4) {
-		U32 nr_curr_frames = nn4 - *p_fft_phase_frames % nn4;
+		U32 n_curr_frames = nn4 - *p_fft_phase_frames % nn4;
 
 		playback_iter = p_fft_buffer_processed + (*p_fft_phase_frames / nn4 + 2) % 3 * nn4 + *p_fft_phase_frames % nn4;
 		capture_iter = p_fft_buffer_original + nn4 + (*p_fft_phase_frames / nn4 + 2) % 3 * nn4 + *p_fft_phase_frames % nn4;
 
-		for (U32 i = 0; i < nr_curr_frames; ++i) {
+		for (U32 i = 0; i < n_curr_frames; ++i) {
 			capture_iter[i] = (*load)((const char *)p_input_iter + i * i_stride_bytes);
 		}
-		for (U32 i = 0; i < nr_curr_frames; ++i) {
+		for (U32 i = 0; i < n_curr_frames; ++i) {
 			for (U32 j = 0; j < o_duplication; ++j) {
 				(*store)((char *)p_output_iter + i * o_stride_bytes + j * o_sizeof, min_f32(max_f32(playback_iter[i], -1), 1));
 			}
 		}
 
 		if (do_visualize) {
-			naive_memmove(buffer_for_visualization, buffer_for_visualization + nr_curr_frames, (ARRAY_LENGTH(buffer_for_visualization) - nr_curr_frames) * sizeof *buffer_for_visualization);
-			for (U32 i = 0; i < nr_curr_frames; ++i) {
-				buffer_for_visualization[ARRAY_LENGTH(buffer_for_visualization) + i - nr_curr_frames] =
+			naive_memmove(buffer_for_visualization, buffer_for_visualization + n_curr_frames, (ARRAY_LENGTH(buffer_for_visualization) - n_curr_frames) * sizeof *buffer_for_visualization);
+			for (U32 i = 0; i < n_curr_frames; ++i) {
+				buffer_for_visualization[ARRAY_LENGTH(buffer_for_visualization) + i - n_curr_frames] =
 				    (*load_back)((char *)p_output_iter + i * o_stride_bytes);
 			}
 		}
 
-		p_output_iter = (char *)p_output_iter + nr_curr_frames * o_stride_bytes;
-		p_input_iter = (const char *)p_input_iter + nr_curr_frames * i_stride_bytes;
-		frame_count_iter -= nr_curr_frames;
+		p_output_iter = (char *)p_output_iter + n_curr_frames * o_stride_bytes;
+		p_input_iter = (const char *)p_input_iter + n_curr_frames * i_stride_bytes;
+		frame_count_iter -= n_curr_frames;
 
 		U32 prev_phase = *p_fft_phase_frames / nn4;
 
-		*p_fft_phase_frames += nr_curr_frames;
+		*p_fft_phase_frames += n_curr_frames;
 		*p_fft_phase_frames %= nn4 * 3;
 
 		if (*p_fft_phase_frames / nn4 == 1 && prev_phase == 0) {
@@ -370,7 +370,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 						 const void *restrict p_input,
 						 ma_uint32 frame_count_ma_param,
 						 U32 fft_k, F32 *p_samples_ri, F32 *p_dft_ri, F32 *p_invsamples_ri,
-						 F32 *p_tmp_inv_samples, F32 *p_extended_dft, U32 nr_active_channels, U32 nr_all_channels, UPTR o_sizeof, UPTR i_sizeof,
+						 F32 *p_tmp_inv_samples, F32 *p_extended_dft, U32 n_active_channels, U32 n_all_channels, UPTR o_sizeof, UPTR i_sizeof,
 						 F32 (*load)(const void *), F32 (*load_back)(const void *), void (*store)(void *, F32))
 {
 	U8 callbackdata = ATOMIC_FETCH_OR(8, &audio_thread_data.data, 1u << 7, ATOMIC_ACQ_REL);
@@ -382,14 +382,14 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 
 	U32 nn = 1uLL << fft_k;
 
-	if (nr_active_channels == 1) {
-		audio_process(p_output, p_input, REQUESTED_PLAYBACK_NR_CHANNELS * o_sizeof, nr_all_channels * i_sizeof, REQUESTED_PLAYBACK_NR_CHANNELS, frame_count_ma, 1,
+	if (n_active_channels == 1) {
+		audio_process(p_output, p_input, REQUESTED_PLAYBACK_N_CHANNELS * o_sizeof, n_all_channels * i_sizeof, REQUESTED_PLAYBACK_N_CHANNELS, frame_count_ma, 1,
 			      callbackdata,
 			      fft_k, p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original, fft_buffer_processed, fft_phase_frames, o_sizeof, load, load_back, store);
-	} else if (nr_active_channels == REQUESTED_PLAYBACK_NR_CHANNELS) {
-		for (U32 i = 0; i < REQUESTED_PLAYBACK_NR_CHANNELS; ++i) {
+	} else if (n_active_channels == REQUESTED_PLAYBACK_N_CHANNELS) {
+		for (U32 i = 0; i < REQUESTED_PLAYBACK_N_CHANNELS; ++i) {
 			audio_process((char *)p_output + o_sizeof * i, (char *)p_input + i_sizeof * i,
-				      REQUESTED_PLAYBACK_NR_CHANNELS * o_sizeof, nr_all_channels * i_sizeof, 1, frame_count_ma, i == 0, callbackdata,
+				      REQUESTED_PLAYBACK_N_CHANNELS * o_sizeof, n_all_channels * i_sizeof, 1, frame_count_ma, i == 0, callbackdata,
 				      fft_k, p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original + i * (1uLL << MAX_K), fft_buffer_processed + i * (1uLL << MAX_K), fft_phase_frames + i, o_sizeof, load, load_back, store);
 		}
 	} else {
@@ -532,8 +532,8 @@ static ALWAYS_INLINE void audio_store_f32(void *p, F32 v)
 	*(F32 *)p = v;
 }
 
-#define GENERATE_rt_audio_callback(in, out, fft_k, i_sizeofbits, o_sizeofbits, nr_active_channels, nr_all_channels)              \
-	void rt_audio_callback_##in##_##out##_##fft_k##_##nr_active_channels##_##nr_all_channels(ma_device *restrict p_device,   \
+#define GENERATE_rt_audio_callback(in, out, fft_k, i_sizeofbits, o_sizeofbits, n_active_channels, n_all_channels)              \
+	void rt_audio_callback_##in##_##out##_##fft_k##_##n_active_channels##_##n_all_channels(ma_device *restrict p_device,   \
 												 void *restrict p_output,        \
 												 const void *restrict p_input,   \
 												 ma_uint32 frame_count_ma_param) \
@@ -563,8 +563,8 @@ static ALWAYS_INLINE void audio_store_f32(void *p, F32 v)
 			invsamples_ri, \
 			tmp_inv_samples, \
 			extended_dft, \
-			nr_active_channels, \
-			nr_all_channels, \
+			n_active_channels, \
+			n_all_channels, \
 			o_sizeofbits / CHAR_BIT, \
 			i_sizeofbits / CHAR_BIT, \
 			audio_load_##in, \

@@ -5,7 +5,7 @@
 #endif
 
 #define MAX_K 13
-#define REQUESTED_PLAYBACK_NR_CHANNELS 2
+#define REQUESTED_PLAYBACK_N_CHANNELS 2
 
 struct isolated_audio_thread_data_ {
 	char padding0[DESTRUCTIVE_INTERFERENCE_NBYTES];

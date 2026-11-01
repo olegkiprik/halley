@@ -259,77 +259,77 @@ static ALWAYS_INLINE BOOL_OUT wrap_mul_s64(S64 *result, S64 x, S64 y)
 }
 
 /* slow if x can be 0 */
-static ALWAYS_INLINE S32 nr_leading_zeros_8(U8 x)
+static ALWAYS_INLINE S32 n_leading_zeros_8(U8 x)
 {
 	assert(x == (U8)x);
 	return __builtin_clzg(x, 8);
 }
-static ALWAYS_INLINE S32 nr_leading_zeros_16(U16 x)
+static ALWAYS_INLINE S32 n_leading_zeros_16(U16 x)
 {
 	assert(x == (U16)x);
 	return __builtin_clzg(x, 16);
 }
-static ALWAYS_INLINE S32 nr_leading_zeros_32(U32 x)
+static ALWAYS_INLINE S32 n_leading_zeros_32(U32 x)
 {
 	assert(x == (U32)x);
 	return __builtin_clzg(x, 32);
 }
-static ALWAYS_INLINE S32 nr_leading_zeros_64(U64 x)
+static ALWAYS_INLINE S32 n_leading_zeros_64(U64 x)
 {
 	assert(x == (U64)x);
 	return __builtin_clzg(x, 64);
 }
-static ALWAYS_INLINE S32 nr_leading_zeros_128(U128 x)
+static ALWAYS_INLINE S32 n_leading_zeros_128(U128 x)
 {
 	assert(x == (U128)x);
 	return __builtin_clzg(x, 128);
 }
-static ALWAYS_INLINE S32 nr_trailing_zeros_8(U8 x)
+static ALWAYS_INLINE S32 n_trailing_zeros_8(U8 x)
 {
 	assert(x == (U8)x);
 	return __builtin_ctzg(x, 8);
 }
-static ALWAYS_INLINE S32 nr_trailing_zeros_16(U16 x)
+static ALWAYS_INLINE S32 n_trailing_zeros_16(U16 x)
 {
 	assert(x == (U16)x);
 	return __builtin_ctzg(x, 16);
 }
-static ALWAYS_INLINE S32 nr_trailing_zeros_32(U32 x)
+static ALWAYS_INLINE S32 n_trailing_zeros_32(U32 x)
 {
 	assert(x == (U32)x);
 	return __builtin_ctzg(x, 32);
 }
-static ALWAYS_INLINE S32 nr_trailing_zeros_64(U64 x)
+static ALWAYS_INLINE S32 n_trailing_zeros_64(U64 x)
 {
 	assert(x == (U64)x);
 	return __builtin_ctzg(x, 64);
 }
-static ALWAYS_INLINE S32 nr_trailing_zeros_128(U128 x)
+static ALWAYS_INLINE S32 n_trailing_zeros_128(U128 x)
 {
 	assert(x == (U128)x);
 	return __builtin_ctzg(x, 128);
 }
-static ALWAYS_INLINE S32 nr_one_bits_u8(U8 x)
+static ALWAYS_INLINE S32 n_one_bits_u8(U8 x)
 {
 	assert(x == (U8)x);
 	return __builtin_popcount(x);
 }
-static ALWAYS_INLINE S32 nr_one_bits_u16(U16 x)
+static ALWAYS_INLINE S32 n_one_bits_u16(U16 x)
 {
 	assert(x == (U16)x);
 	return __builtin_popcount(x);
 }
-static ALWAYS_INLINE S32 nr_one_bits_u32(U32 x)
+static ALWAYS_INLINE S32 n_one_bits_u32(U32 x)
 {
 	assert(x == (U32)x);
 	return __builtin_popcount(x);
 }
-static ALWAYS_INLINE S32 nr_one_bits_u64(U64 x)
+static ALWAYS_INLINE S32 n_one_bits_u64(U64 x)
 {
 	assert(x == (U64)x);
 	return __builtin_popcountll(x);
 }
-static ALWAYS_INLINE S32 nr_one_bits_u128(U128 x)
+static ALWAYS_INLINE S32 n_one_bits_u128(U128 x)
 {
 	assert(x == (U128)x);
 	return __builtin_popcountg(x);
