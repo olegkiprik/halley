@@ -27,13 +27,13 @@ extern OPTIONAL_ALIGNAS(SIMD_NBYTES) F32 fft_buffer_original[(1uLL << MAX_K) * 2
 extern OPTIONAL_ALIGNAS(SIMD_NBYTES) F32 fft_buffer_processed[(1uLL << MAX_K) * 2]; /* soa 2 channels */
 extern OPTIONAL_ALIGNAS(SIMD_NBYTES) F32 buffer_for_visualization[1uLL << MAX_K];
 extern U32 fft_phase_frames[2]; /* 2 channels */
-extern union pthread_mutex_t vert_mutex;
+extern void vert_mutex;
 
 extern struct isolated_audio_vertices_ audio_vert;
 extern struct isolated_audio_thread_data_ audio_thread_data;
 
-extern void (*my_pthread_mutex_try_lock)(void);
-extern void (*my_pthread_mutex_unlock)(void);
+extern int (*my_pthread_mutex_try_lock)(void*);
+extern int (*my_pthread_mutex_unlock)(void*);
 
 #if 0
 #define DEBUG_TEST_AUDIO_OUTPUT
@@ -397,7 +397,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 	}
 
 	int upd_graphics = 1;
-	if (0 != (*(int (*)(union pthread_mutex_t *))my_pthread_mutex_try_lock)(&vert_mutex)) {
+	if (0 != (*my_pthread_mutex_try_lock)(&vert_mutex)) {
 		upd_graphics = 0;
 	}
 
@@ -431,7 +431,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 			}
 		}
 
-		(*(void (*)(union pthread_mutex_t *))my_pthread_mutex_unlock)(&vert_mutex);
+		(*my_pthread_mutex_unlock)(&vert_mutex);
 		upd_graphics = 0;
 	}
 

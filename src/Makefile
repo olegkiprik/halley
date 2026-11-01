@@ -1,11 +1,15 @@
 # release
 # -s
+# -DNDEBUG
 
 # x86-64, AArch64, ..?
+# Little endian
+# data pointers have the same size
+# function pointers have the same size
 #
 # No AVX? Add -DNO_SIMD_256 and replace -DSIMD_VEX with -USIMD_VEX
 
-CPU_ARCH = x86-64
+CPU_ARCH = x86-64-v2 # SSE4.1 stream read instruction
 CC = clang
 COMMON_FLAGS = -fstrict-aliasing -fno-builtin
 C_FLAGS = $(COMMON_FLAGS) -pipe -std=c17 -UNDEBUG -mcx16 -march=$(CPU_ARCH) -USIMD_VEX -DNO_SIMD_1024 -DNO_SIMD_512 -DNO_SIMD_256 -UNO_SIMD_128 -UNO_SIMD_64 -Wall -Wextra -Wshadow -Wno-pedantic -Wstrict-aliasing -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Wno-unused-function -Wno-ignored-attributes -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Werror=vla -Werror=trigraphs -Werror=unknown-escape-sequence -U_FORTIFY_SOURCE -fvisibility=hidden -Wa,--noexecstack -fno-stack-protector -fno-ident -fno-asynchronous-unwind-tables -fno-unwind-tables -O3 -ffast-math -fno-PIC -fno-pie

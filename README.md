@@ -16,9 +16,11 @@ x86-64 Linux portable.
 
 ```
 cd src
-./compile_with_make.sh
+./compile_with_make.sh NR_CORES
 ./halley &
 ```
+
+If unsure, replace NR\_CORES with 4.
 
 ### How to use
 

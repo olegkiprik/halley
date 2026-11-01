@@ -105,10 +105,10 @@ static BOOL_OUT init_all_pfn(void *c, void *p)
 	my_pthread_mutex_lock = tmp;
 	tmp = dlsym(p, "pthread_mutex_trylock");
 	failed |= (int)(tmp == NULL);
-	my_pthread_mutex_try_lock = tmp;
+	my_pthread_mutex_try_lock = (int (*)(void*))tmp;
 	tmp = dlsym(p, "pthread_mutex_unlock");
 	failed |= (int)(tmp == NULL);
-	my_pthread_mutex_unlock = tmp;
+	my_pthread_mutex_unlock = (int (*)(void*))tmp;
 	tmp = dlsym(p, "pthread_mutex_init");
 	failed |= (int)(tmp == NULL);
 	my_pthread_mutex_init = tmp;
@@ -1455,7 +1455,7 @@ static ALWAYS_INLINE int submain(void)
 #endif
 
 		int upd_graphics = 1;
-		if (0 != (*(int (*)(pthread_mutex_t *))my_pthread_mutex_try_lock)(&vert_mutex)) {
+		if (0 != (*my_pthread_mutex_try_lock)(&vert_mutex)) {
 			upd_graphics = 0;
 		}
 
@@ -1463,7 +1463,7 @@ static ALWAYS_INLINE int submain(void)
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof audio_vert.time, audio_vert.time);
 			glBufferSubData(GL_ARRAY_BUFFER, sizeof audio_vert.time, sizeof audio_vert.freq, audio_vert.freq);
 			glBufferSubData(GL_ARRAY_BUFFER, sizeof audio_vert.time + sizeof audio_vert.freq, sizeof audio_vert.phase, audio_vert.phase);
-			(*(void (*)(pthread_mutex_t *))my_pthread_mutex_unlock)(&vert_mutex);
+			(*my_pthread_mutex_unlock)(&vert_mutex);
 			upd_graphics = 0;
 		}
 

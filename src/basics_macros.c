@@ -42,6 +42,9 @@
 #define STRINGIZE(x) #x
 #define STRINGIZE_VALUE(x) STRINGIZE(x)
 
+#define CATENATE(x, y) x##y
+#define CATENATE_VALUES(x, y) CATENATE(x, y)
+
 #include "basic_types.c"
 
 #ifndef UMAX
@@ -54,6 +57,18 @@
 /*
  * SIMD
  */
+
+#define S8_1 S8
+#define S16_1 S16
+#define S32_1 S32
+#define U8_1 U8
+#define U16_1 U16
+#define U32_1 U32
+#define F5E11S_1 F5E11S
+#define F8E8S_1 F8E8S
+#define F8E24S_1 F8E24S
+#define F11E53S_1 F11E53S
+#define F32_1 F32
 
 #define U8_8 __attribute__((__vector_size__(8), __aligned__(8))) U8
 #define U16_4 __attribute__((__vector_size__(8), __aligned__(8))) U16
@@ -1057,11 +1072,11 @@
  */
 
 #ifndef NON_TEMPORAL_LOAD
-#define NON_TEMPORAL_LOAD(nbits, p) __builtin_nontemporal_load(p)
+#define NON_TEMPORAL_LOAD(nbits, p) __builtin_nontemporal_load(p) /* use lfence? */
 #endif
 
 #ifndef NON_TEMPORAL_STORE
-#define NON_TEMPORAL_STORE(nbits, p, v) __builtin_nontemporal_store(v, p)
+#define NON_TEMPORAL_STORE(nbits, p, v) __builtin_nontemporal_store(v, p) /* use sfence? */
 #endif
 
 #ifndef ATOMIC_CAS_LOOP_PAUSE
@@ -1071,6 +1086,26 @@
 /*
  * misc
  */
+
+#if 1 /* Little endian */
+#define LE_NTOH8(x) (x)
+#define LE_HTON8(x) (x)
+#define LE_NTOH16(x) (x)
+#define LE_HTON16(x) (x)
+#define LE_NTOH32(x) (x)
+#define LE_HTON32(x) (x)
+#define LE_NTOH64(x) (x)
+#define LE_HTON64(x) (x)
+#elif 0
+#define LE_NTOH8(x) (x)
+#define LE_HTON8(x) (x)
+#define LE_NTOH16(x) ((U16)(x) << 8 | (U16)(x) >> 8)
+#define LE_HTON16(x) LE_NTOH16(x)
+#define LE_NTOH32(x) ((U32)(x) << 24 | (U32)(x) << 8 & 0x00ff0000u | (U32)(x) >> 8 & 0x0000ff00u | (U32)(x) >> 24)
+#define LE_HTON32(x) LE_NTOH32(x)
+#define LE_NTOH64(x) ((U64)(x) << 56 | ((U64)(x) & 0xff00u) << 40 | ((U64)(x) & 0xff0000u) << 24 | ((U64)(x) & 0xff000000u) << 8 | (U64)(x) >> 8 & 0xff000000u | (U64)(x) >> 24 & 0xff0000u | (U64)(x) >> 40 & 0xff00u | (U64)(x) >> 56)
+#define LE_HTON64(x) LE_NTOH64(x)
+#endif
 
 /* requires constant */
 #ifndef ALIGNED_ALLOCA

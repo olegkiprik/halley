@@ -149,8 +149,8 @@ static const char *priv_extra_naive_strstr(const char *haystack, const char *nee
 #include "foreign_dlopen.c"
 #endif
 
-void (*my_pthread_mutex_try_lock)(void);
-void (*my_pthread_mutex_unlock)(void);
+int (*my_pthread_mutex_try_lock)(void*);
+int (*my_pthread_mutex_unlock)(void*);
 void (*my_pthread_attr_init)(void);
 void (*my_pthread_attr_destroy)(void);
 void (*my_pthread_cond_init)(void);
@@ -196,8 +196,8 @@ static void *(*my_memset)(void *, int, size_t);
 
 #define pthread_join(thread, retval) (*(int (*)(pthread_t, void **))my_pthread_join)(thread, retval)
 #define pthread_mutex_lock(mutex) (*(int (*)(void *))my_pthread_mutex_lock)(mutex)
-#define pthread_mutex_try_lock(mutex) (*(int (*)(void *))my_pthread_mutex_try_lock)(mutex)
-#define pthread_mutex_unlock(mutex) (*(int (*)(void *))my_pthread_mutex_unlock)(mutex)
+#define pthread_mutex_try_lock(mutex) (*my_pthread_mutex_try_lock)(mutex)
+#define pthread_mutex_unlock(mutex) (*my_pthread_mutex_unlock)(mutex)
 #define pthread_mutex_init(mutex, mutexattr) \
 	(*(int (*)(void *, const void *))my_pthread_mutex_init)(mutex, mutexattr)
 #define pthread_mutex_destroy(mutex) (*(int (*)(void *))my_pthread_mutex_destroy)(mutex)
