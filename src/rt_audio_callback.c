@@ -107,9 +107,18 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 	U32 frame_count_iter = frame_count_ma;
 	F32 *playback_iter;
 	F32 *capture_iter;
+	S32 finish = 0;
 
 	while (*p_fft_phase_frames % nn4 + frame_count_iter >= nn4) {
-		U32 n_curr_frames = nn4 - *p_fft_phase_frames % nn4;
+		U32 n_curr_frames;
+		U32 prev_phase;
+
+	l_finish:
+		if (!finish) {
+			n_curr_frames = nn4 - *p_fft_phase_frames % nn4;
+		} else {
+			n_curr_frames = frame_count_iter;
+		}
 
 		playback_iter = p_fft_buffer_processed + (*p_fft_phase_frames / nn4 + 2) % 3 * nn4 + *p_fft_phase_frames % nn4;
 		capture_iter = p_fft_buffer_original + nn4 + (*p_fft_phase_frames / nn4 + 2) % 3 * nn4 + *p_fft_phase_frames % nn4;
@@ -131,14 +140,20 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 			}
 		}
 
+		if (!finish) {
 		p_output_iter = (char *)p_output_iter + n_curr_frames * o_stride_bytes;
 		p_input_iter = (const char *)p_input_iter + n_curr_frames * i_stride_bytes;
 		frame_count_iter -= n_curr_frames;
 
-		U32 prev_phase = *p_fft_phase_frames / nn4;
+			prev_phase = *p_fft_phase_frames / nn4;
+		}
 
 		*p_fft_phase_frames += n_curr_frames;
 		*p_fft_phase_frames %= nn4 * 3;
+
+		if (finish) {
+			return;
+		}
 
 		if (*p_fft_phase_frames / nn4 == 1 && prev_phase == 0) {
 			for (U32 i = 0; i < nn; ++i) {
@@ -337,27 +352,8 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 	}
 
 	if (frame_count_iter != 0) {
-		playback_iter = p_fft_buffer_processed + (*p_fft_phase_frames / nn4 + 2) % 3 * nn4 + *p_fft_phase_frames % nn4;
-		capture_iter = p_fft_buffer_original + nn4 + (*p_fft_phase_frames / nn4 + 2) % 3 * nn4 + *p_fft_phase_frames % nn4;
-
-		for (U32 i = 0; i < frame_count_iter; ++i) {
-			capture_iter[i] = (*load)((const char *)p_input_iter + i * i_stride_bytes);
-		}
-		for (U32 i = 0; i < frame_count_iter; ++i) {
-			for (U32 j = 0; j < o_duplication; ++j) {
-				(*store)((char *)p_output_iter + i * o_stride_bytes + j * o_sizeof, min_f32(max_f32(playback_iter[i], -1), 1));
-			}
-		}
-
-		if (do_visualize) {
-			naive_memmove(buffer_for_visualization, buffer_for_visualization + frame_count_iter, (ARRAY_LENGTH(buffer_for_visualization) - frame_count_iter) * sizeof *buffer_for_visualization);
-			for (U32 i = 0; i < frame_count_iter; ++i) {
-				buffer_for_visualization[ARRAY_LENGTH(buffer_for_visualization) + i - frame_count_iter] = (*load_back)((char *)p_output_iter + i * o_stride_bytes);
-			}
-		}
-
-		*p_fft_phase_frames += frame_count_iter;
-		*p_fft_phase_frames %= nn4 * 3;
+		finish = 1;
+		goto l_finish;
 	}
 }
 
