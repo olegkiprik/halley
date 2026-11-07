@@ -401,6 +401,12 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 			p_samples_ri[i * 2 + 0] = buffer_for_visualization[ARRAY_LENGTH(buffer_for_visualization) - nn + i];
 			p_samples_ri[i * 2 + 1] = 0;
 		}
+
+		/* Hamming window */
+		for (U32 i = 0; i < nn; ++i) {
+			p_samples_ri[i * 2 + 0] *= 0.53836f + 0.46164f * naive_sin_f32(M_PIf * i / nn, 7);
+		}
+
 		fft_f32_outofplace(p_dft_ri, p_samples_ri, fft_k, 0);
 
 		for (U32 i = 0; i < (1 << 10); i += SIMD_N_32) {
