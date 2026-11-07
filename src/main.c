@@ -105,10 +105,10 @@ static BOOL_OUT init_all_pfn(void *c, void *p)
 	my_pthread_mutex_lock = tmp;
 	tmp = dlsym(p, "pthread_mutex_trylock");
 	failed |= (int)(tmp == NULL);
-	my_pthread_mutex_try_lock = (int (*)(void*))tmp;
+	my_pthread_mutex_try_lock = (int (*)(void *))tmp;
 	tmp = dlsym(p, "pthread_mutex_unlock");
 	failed |= (int)(tmp == NULL);
-	my_pthread_mutex_unlock = (int (*)(void*))tmp;
+	my_pthread_mutex_unlock = (int (*)(void *))tmp;
 	tmp = dlsym(p, "pthread_mutex_init");
 	failed |= (int)(tmp == NULL);
 	my_pthread_mutex_init = tmp;
@@ -438,9 +438,9 @@ F32 buffer_for_visualization[1uLL << MAX_K];
 
 #define GENERATE_DECLARE_rt_audio_callback(in, out, fft_k, i_sizeofbits, o_sizeofbits, n_active_channels, n_all_channels)    \
 	void rt_audio_callback_##in##_##out##_##fft_k##_##n_active_channels##_##n_all_channels(ma_device *restrict p_device, \
-												 void *restrict p_output,      \
-												 const void *restrict p_input, \
-												 ma_uint32 frame_count_ma_param)
+											       void *restrict p_output,      \
+											       const void *restrict p_input, \
+											       ma_uint32 frame_count_ma_param)
 
 GENERATE_DECLARE_rt_audio_callback(s16, s16, 10, 16, 16, 1, 1);
 GENERATE_DECLARE_rt_audio_callback(s24, s16, 10, 24, 16, 1, 1);
