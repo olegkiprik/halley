@@ -9,10 +9,8 @@ static ALWAYS_INLINE void naive_memcpy(void *restrict dst, const void *restrict 
 	char *p_dst;
 	char *p_src;
 
-	assert(len == (UPTR)len);
-	ALWAYS(dst != NULL);
-	ALWAYS(src != NULL);
-	ALWAYS(len > 0);
+	assert(dst != NULL);
+	assert(src != NULL);
 
 	p_dst = (char *)dst;
 	p_src = (char *)src;
@@ -28,7 +26,7 @@ static ALWAYS_INLINE void naive_memcpy(void *restrict dst, const void *restrict 
 static ALWAYS_INLINE void naive_memmove(void *dst, const void *src, UPTR nbytes)
 {
 	if ((UPTR)dst < (UPTR)src) {
-		while (nbytes) {
+		while (nbytes != 0) {
 			*(char *)dst = *(char *)src;
 			--nbytes;
 			dst = (char *)dst + 1;
@@ -37,7 +35,7 @@ static ALWAYS_INLINE void naive_memmove(void *dst, const void *src, UPTR nbytes)
 	} else {
 		dst = (char *)dst + nbytes;
 		src = (char *)src + nbytes;
-		while (nbytes) {
+		while (nbytes != 0) {
 			dst = (char *)dst - 1;
 			src = (char *)src - 1;
 			*(char *)dst = *(char *)src;

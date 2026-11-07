@@ -9,10 +9,13 @@
 #
 # No AVX? Add -DNO_SIMD_256 and replace -DSIMD_VEX with -USIMD_VEX
 
+FLAG_STRICT_ALIASING = -fstrict-aliasing
+OPTION_MACRO_NO_STRICT_ALIASING = U
+
 CPU_ARCH = x86-64-v2 # SSE4.1 stream read instruction
 CC = clang
-COMMON_FLAGS = -fstrict-aliasing -fno-builtin
-C_FLAGS = $(COMMON_FLAGS) -pipe -std=c17 -UNDEBUG -mcx16 -march=$(CPU_ARCH) -USIMD_VEX -DNO_SIMD_1024 -DNO_SIMD_512 -DNO_SIMD_256 -UNO_SIMD_128 -UNO_SIMD_64 -Wall -Wextra -Wshadow -Wno-pedantic -Wstrict-aliasing -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Wno-unused-function -Wno-ignored-attributes -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Werror=vla -Werror=trigraphs -Werror=unknown-escape-sequence -U_FORTIFY_SOURCE -fvisibility=hidden -Wa,--noexecstack -fno-stack-protector -fno-ident -fno-asynchronous-unwind-tables -fno-unwind-tables -O3 -ffast-math -fno-PIC -fno-pie
+COMMON_FLAGS = -fno-builtin
+C_FLAGS = $(COMMON_FLAGS) -pipe -std=c17 -UNDEBUG -mcx16 -march=$(CPU_ARCH) $(FLAG_STRICT_ALIASING) -$(OPTION_MACRO_NO_STRICT_ALIASING)NO_STRICT_ALIASING -USIMD_VEX -DNO_SIMD_1024 -DNO_SIMD_512 -DNO_SIMD_256 -UNO_SIMD_128 -UNO_SIMD_64 -Wall -Wextra -Wshadow -Wno-pedantic -Wstrict-aliasing -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Wno-unused-function -Wno-ignored-attributes -Wno-logical-op-parentheses -Wno-bitwise-op-parentheses -Wno-shift-op-parentheses -Werror=vla -Werror=trigraphs -Werror=unknown-escape-sequence -U_FORTIFY_SOURCE -fvisibility=hidden -Wa,--noexecstack -fno-stack-protector -fno-ident -fno-asynchronous-unwind-tables -fno-unwind-tables -O3 -ffast-math -fno-PIC -fno-pie
 ASM_FLAGS = -pipe -Wall -Wextra -Wshadow -Wno-pedantic -fno-PIC -fno-pie -Wa,--noexecstack
 
 amd64/elf_start.o: amd64/elf_start.s
@@ -50,4 +53,4 @@ rt_audio_callback_1_2_13.o: rt_audio_callback_1_2_13.c
 rt_audio_callback_2_2_13.o: rt_audio_callback_2_2_13.c
 	$(CC) $(C_FLAGS) -c -o $@ $<
 halley: amd64/elf_start.o amd64/elf_fdlentry.o amd64/elf_trampo.o launcher.o main.o rt_audio_callback_1_1_10.o rt_audio_callback_1_2_10.o rt_audio_callback_2_2_10.o rt_audio_callback_1_1_11.o rt_audio_callback_1_2_11.o rt_audio_callback_2_2_11.o rt_audio_callback_1_1_12.o rt_audio_callback_1_2_12.o rt_audio_callback_2_2_12.o rt_audio_callback_1_1_13.o rt_audio_callback_1_2_13.o rt_audio_callback_2_2_13.o
-	$(CC) -march=$(CPU_ARCH) $(COMMON_FLAGS) -nostartfiles -nodefaultlibs -nostdlib -e elf_start -Wl,-Bsymbolic,--no-undefined,--build-id=none -static -Wl,-Ttext-segment=0x66000000 -o $@ $^
+	$(CC) -march=$(CPU_ARCH) $(COMMON_FLAGS) $(FLAG_STRICT_ALIASING) -nostartfiles -nodefaultlibs -nostdlib -e elf_start -Wl,-Bsymbolic,--no-undefined,--build-id=none -static -Wl,-Ttext-segment=0x66000000 -o $@ $^

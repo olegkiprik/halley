@@ -425,13 +425,13 @@ U32 fft_phase_frames[2];
 pthread_mutex_t vert_mutex = PTHREAD_MUTEX_INITIALIZER;
 int tmpphase = 0;
 
-OPTIONAL_ALIGNAS(SIMD_NBYTES)
+ALIGNAS(SIMD_NBYTES)
 F32 fft_buffer_original[(1uLL << MAX_K) * 2];
 
-OPTIONAL_ALIGNAS(SIMD_NBYTES)
+ALIGNAS(SIMD_NBYTES)
 F32 fft_buffer_processed[(1uLL << MAX_K) * 2];
 
-OPTIONAL_ALIGNAS(SIMD_NBYTES)
+ALIGNAS(SIMD_NBYTES)
 F32 buffer_for_visualization[1uLL << MAX_K];
 
 #define REQUESTED_N_PERIODS 2

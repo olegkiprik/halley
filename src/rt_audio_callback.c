@@ -23,9 +23,9 @@ typedef struct ma_device ma_device;
 typedef U32 ma_uint32;
 
 STATIC_ASSERT(REQUESTED_PLAYBACK_N_CHANNELS <= 2);
-extern OPTIONAL_ALIGNAS(SIMD_NBYTES) F32 fft_buffer_original[(1uLL << MAX_K) * 2];  /* soa 2 channels */
-extern OPTIONAL_ALIGNAS(SIMD_NBYTES) F32 fft_buffer_processed[(1uLL << MAX_K) * 2]; /* soa 2 channels */
-extern OPTIONAL_ALIGNAS(SIMD_NBYTES) F32 buffer_for_visualization[1uLL << MAX_K];
+extern ALIGNAS(SIMD_NBYTES) F32 fft_buffer_original[(1uLL << MAX_K) * 2];  /* soa 2 channels */
+extern ALIGNAS(SIMD_NBYTES) F32 fft_buffer_processed[(1uLL << MAX_K) * 2]; /* soa 2 channels */
+extern ALIGNAS(SIMD_NBYTES) F32 buffer_for_visualization[1uLL << MAX_K];
 extern U32 fft_phase_frames[2]; /* 2 channels */
 extern void vert_mutex;
 
@@ -85,13 +85,13 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 {
 
 #if 0
-	OPTIONAL_ALIGNAS(SIMD_NBYTES)
+	ALIGNAS(SIMD_NBYTES)
 	F32 samples_ri[(1uLL << FFT_K) * 2];
 
-	OPTIONAL_ALIGNAS(SIMD_NBYTES)
+	ALIGNAS(SIMD_NBYTES)
 	F32 dft_ri[(1uLL << FFT_K) * 2];
 
-	OPTIONAL_ALIGNAS(SIMD_NBYTES)
+	ALIGNAS(SIMD_NBYTES)
 	F32 invsamples_ri[(1uLL << FFT_K) * 2];
 #endif
 
@@ -153,9 +153,7 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 					p_samples_ri[(i + nn4 * 3) * 2 + 0] -= p_samples_ri[(i + nn4 * 3) * 2 + 0] * (naive_sin_f32((F32)i / nn4 * M_PIf + M_PIf * 2 - M_PI_2f, 7) + 1) / 2;
 				}
 			}
-#if 0
-			fft_k_outofplace(p_dft_ri, samples_ri, 0);
-#endif
+
 			fft_f32_outofplace(p_dft_ri, p_samples_ri, fft_k, 0);
 
 			/* including! */
@@ -277,13 +275,11 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 				p_dft_ri[i * 2 + 0] = +p_dft_ri[(nn - i) * 2 + 0];
 				p_dft_ri[i * 2 + 1] = -p_dft_ri[(nn - i) * 2 + 1];
 			}
-#if 0
-			fft_k_outofplace(invsamples_ri, p_dft_ri, 1);
-#endif
+
 			fft_f32_outofplace(p_invsamples_ri, p_dft_ri, fft_k, 1);
 
 #if 0
-			OPTIONAL_ALIGNAS(SIMD_NBYTES_FAST)
+			ALIGNAS(SIMD_NBYTES_FAST)
 			F32 tmp_inv_samples[(1uLL << FFT_K) / 4];
 #endif
 			for (U32 i = 0; i < nn4; ++i) {
@@ -445,13 +441,21 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 static ALWAYS_INLINE U8 raw_load_u8(const void *p)
 {
 	U8 res;
+#if defined(NO_STRICT_ALIASING)
+	res = *(U8*)p;
+#else
 	asm volatile("movb (%1), %0" : "=r"(res) : "r"(p) : "memory");
+#endif
 	return res;
 }
 
 static ALWAYS_INLINE void raw_store_u8(void *p, U8 v)
 {
+#if defined(NO_STRICT_ALIASING)
+	*(U8*)p = v;
+#else
 	asm volatile("movb %1, (%0)" ::"r"(p), "r"((U8)v) : "memory");
+#endif
 }
 
 static ALWAYS_INLINE F32 audio_load_s16(const void *p)
@@ -538,16 +542,16 @@ static ALWAYS_INLINE void audio_store_f32(void *p, F32 v)
 												 const void *restrict p_input,   \
 												 ma_uint32 frame_count_ma_param) \
 	{                                                                                                                        \
-		OPTIONAL_ALIGNAS(SIMD_NBYTES)                                                                                    \
+		ALIGNAS(SIMD_NBYTES)                                                                                    \
 		F32 samples_ri[(1uLL << fft_k) * 2];                                                                             \
                                                                                                                                  \
-		OPTIONAL_ALIGNAS(SIMD_NBYTES)                                                                                    \
+		ALIGNAS(SIMD_NBYTES)                                                                                    \
 		F32 dft_ri[(1uLL << fft_k) * 2];                                                                                 \
                                                                                                                                  \
-		OPTIONAL_ALIGNAS(SIMD_NBYTES)                                                                                    \
+		ALIGNAS(SIMD_NBYTES)                                                                                    \
 		F32 invsamples_ri[(1uLL << fft_k) * 2];                                                                          \
                                                                                                                                  \
-		OPTIONAL_ALIGNAS(SIMD_NBYTES)                                                                                    \
+		ALIGNAS(SIMD_NBYTES)                                                                                    \
 		F32 tmp_inv_samples[(1uLL << fft_k) / 4];                                                                        \
                                                                                                                                  \
 		F32 extended_dft[(1uLL << fft_k) / 2 * 4 * 2];                                                                   \
