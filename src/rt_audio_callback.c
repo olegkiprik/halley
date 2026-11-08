@@ -365,8 +365,8 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 						 F32 *p_tmp_inv_samples, F32 *p_extended_dft, U32 n_active_channels, U32 n_all_channels, UPTR o_sizeof, UPTR i_sizeof,
 						 F32 (*load)(const void *), F32 (*load_back)(const void *), void (*store)(void *, F32))
 {
-	U8 callbackdata = ATOMIC_FETCH_OR(8, &audio_thread_data.data, 1u << 7, ATOMIC_ACQ_REL);
 	full_memory_fence();
+	U8 callbackdata = ATOMIC_FETCH_OR(8, &audio_thread_data.data, 1u << 7, ATOMIC_ACQ_REL);
 
 	U32 frame_count_ma = frame_count_ma_param;
 
@@ -432,9 +432,6 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 		(*my_pthread_mutex_unlock)(&vert_mutex);
 		upd_graphics = 0;
 	}
-
-	/* No -flto! */
-	/* x86_64 and AArch64 */
 
 	full_memory_fence();
 	ATOMIC_FETCH_AND(8, &audio_thread_data.data, (U8) ~(1u << 7), ATOMIC_ACQ_REL);
@@ -539,7 +536,7 @@ static ALWAYS_INLINE void audio_store_f32(void *p, F32 v)
 }
 
 #define GENERATE_rt_audio_callback(in, out, fft_k, i_sizeofbits, o_sizeofbits, n_active_channels, n_all_channels)              \
-	void rt_audio_callback_##in##_##out##_##fft_k##_##n_active_channels##_##n_all_channels(ma_device *restrict p_device,   \
+	NOINLINE void rt_audio_callback_##in##_##out##_##fft_k##_##n_active_channels##_##n_all_channels(ma_device *restrict p_device,   \
 											       void *restrict p_output,        \
 											       const void *restrict p_input,   \
 											       ma_uint32 frame_count_ma_param) \
