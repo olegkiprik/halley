@@ -366,7 +366,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 						 F32 (*load)(const void *), F32 (*load_back)(const void *), void (*store)(void *, F32))
 {
 	full_memory_fence();
-	U8 callbackdata = ATOMIC_FETCH_OR(8, &audio_thread_data.data, 1u << 7, ATOMIC_ACQ_REL);
+	U8 callbackdata = ATOMIC_FETCH_OR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, 1u << 7, ATOMIC_ACQ_REL);
 
 	U32 frame_count_ma = frame_count_ma_param;
 
@@ -434,7 +434,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 	}
 
 	full_memory_fence();
-	ATOMIC_FETCH_AND(8, &audio_thread_data.data, (U8) ~(1u << 7), ATOMIC_ACQ_REL);
+	ATOMIC_FETCH_AND(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, (U8) ~(1u << 7), ATOMIC_ACQ_REL);
 }
 
 static ALWAYS_INLINE U8 raw_load_u8(const void *p)

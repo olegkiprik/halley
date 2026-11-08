@@ -1302,7 +1302,7 @@ static ALWAYS_INLINE int submain(void)
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof audio_vert.time, sizeof audio_vert.freq, audio_vert.freq);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof audio_vert.time + sizeof audio_vert.freq, sizeof audio_vert.phase, audio_vert.phase);
 
-	ATOMIC_STORE(8, &audio_thread_data.data, 14, ATOMIC_RELEASE);
+	ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, 14, ATOMIC_RELEASE);
 
 	full_memory_fence();
 	if (RARELY(MA_SUCCESS != ma_device_start(&device))) {
@@ -1365,7 +1365,7 @@ static ALWAYS_INLINE int submain(void)
 				audio_thread_data_send &= ~(7 << 1);
 				audio_thread_data_send |= 2;
 				tmpxor ^= audio_thread_data_send;
-				ATOMIC_FETCH_XOR(8, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
+				ATOMIC_FETCH_XOR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | RGFW_key2: {
@@ -1373,7 +1373,7 @@ static ALWAYS_INLINE int submain(void)
 				audio_thread_data_send &= ~(7 << 1);
 				audio_thread_data_send |= 4;
 				tmpxor ^= audio_thread_data_send;
-				ATOMIC_FETCH_XOR(8, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
+				ATOMIC_FETCH_XOR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | RGFW_key3: {
@@ -1381,7 +1381,7 @@ static ALWAYS_INLINE int submain(void)
 				audio_thread_data_send &= ~(7 << 1);
 				audio_thread_data_send |= 6;
 				tmpxor ^= audio_thread_data_send;
-				ATOMIC_FETCH_XOR(8, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
+				ATOMIC_FETCH_XOR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | RGFW_key4: {
@@ -1389,7 +1389,7 @@ static ALWAYS_INLINE int submain(void)
 				audio_thread_data_send &= ~(7 << 1);
 				audio_thread_data_send |= 8;
 				tmpxor ^= audio_thread_data_send;
-				ATOMIC_FETCH_XOR(8, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
+				ATOMIC_FETCH_XOR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | RGFW_key5: {
@@ -1397,7 +1397,7 @@ static ALWAYS_INLINE int submain(void)
 				audio_thread_data_send &= ~(7 << 1);
 				audio_thread_data_send |= 10;
 				tmpxor ^= audio_thread_data_send;
-				ATOMIC_FETCH_XOR(8, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
+				ATOMIC_FETCH_XOR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | RGFW_key6: {
@@ -1405,7 +1405,7 @@ static ALWAYS_INLINE int submain(void)
 				audio_thread_data_send &= ~(7 << 1);
 				audio_thread_data_send |= 12;
 				tmpxor ^= audio_thread_data_send;
-				ATOMIC_FETCH_XOR(8, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
+				ATOMIC_FETCH_XOR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | RGFW_key7: {
@@ -1413,7 +1413,7 @@ static ALWAYS_INLINE int submain(void)
 				audio_thread_data_send &= ~(7 << 1);
 				audio_thread_data_send |= 14;
 				tmpxor ^= audio_thread_data_send;
-				ATOMIC_FETCH_XOR(8, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
+				ATOMIC_FETCH_XOR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | RGFW_key0: {
@@ -1421,13 +1421,13 @@ static ALWAYS_INLINE int submain(void)
 				audio_thread_data_send &= ~(7 << 1);
 				audio_thread_data_send |= 0;
 				tmpxor ^= audio_thread_data_send;
-				ATOMIC_FETCH_XOR(8, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
+				ATOMIC_FETCH_XOR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, tmpxor, ATOMIC_ACQ_REL);
 				break;
 			}
 
 			case (U32)RGFW_keyPressed << 16 | RGFW_keyW: {
 				audio_thread_data_send ^= 1;
-				ATOMIC_FETCH_XOR(8, &audio_thread_data.data, 1, ATOMIC_ACQ_REL);
+				ATOMIC_FETCH_XOR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, 1, ATOMIC_ACQ_REL);
 				break;
 			}
 			case (U32)RGFW_windowResized << 16: {
@@ -1451,7 +1451,7 @@ static ALWAYS_INLINE int submain(void)
 		}
 
 #if 0
-		(*my_printf)("%d", (1u << 7) &ATOMIC_LOAD(8, &audio_thread_data.data, ATOMIC_ACQUIRE) ? 1 : 0);
+		(*my_printf)("%d", (1u << 7) &ATOMIC_LOAD(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, ATOMIC_ACQUIRE) ? 1 : 0);
 #endif
 
 		int upd_graphics = 1;
