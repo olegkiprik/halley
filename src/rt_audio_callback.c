@@ -313,7 +313,6 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 				p_tmp_inv_samples[i] /= nn;
 			}
 
-			assert(nn4 >= SIMD_N_32);
 			for (U32 i = 0; i < nn4; i += SIMD_N_32) {
 				F32_VEC res;
 				F32_VEC tmp0;
@@ -403,8 +402,10 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 		}
 
 		/* Hamming window */
-		for (U32 i = 0; i < nn; ++i) {
-			p_samples_ri[i * 2 + 0] *= 0.53836f + 0.46164f * naive_sin_f32(M_PIf * i / nn, 7);
+		for (U32 i = 0; i < nn / 2; ++i) {
+			F32 tmp = 0.53836f + 0.46164f * naive_sin_f32(M_PIf * i / nn, 7);
+			p_samples_ri[i * 2 + 0] *= tmp;
+			p_samples_ri[(nn - i - 1) * 2 + 0] *= tmp;
 		}
 
 		fft_f32_outofplace(p_dft_ri, p_samples_ri, fft_k, 0);
@@ -554,6 +555,8 @@ static ALWAYS_INLINE void audio_store_f32(void *p, F32 v)
 		F32 tmp_inv_samples[(1uLL << fft_k) / 4];                                                                               \
                                                                                                                                         \
 		F32 extended_dft[(1uLL << fft_k) / 2 * 4 * 2];                                                                          \
+                                                                                                                                        \
+		STATIC_ASSERT(fft_k >= 8);                                                                                              \
                                                                                                                                         \
 		/* clang-format off */ \
 		rt_audio_callback_impl(p_device, \

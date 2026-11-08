@@ -944,6 +944,7 @@ static ALWAYS_INLINE int submain(void)
 			channelconf_idx = 0;
 		}
 
+		sample_rate_idx <<= 0;
 		out_idx <<= 2;
 		in_idx <<= 4;
 		channelconf_idx <<= 6;
