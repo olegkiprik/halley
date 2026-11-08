@@ -149,8 +149,8 @@ static const char *priv_extra_naive_strstr(const char *haystack, const char *nee
 #include "foreign_dlopen.c"
 #endif
 
-int (*my_pthread_mutex_try_lock)(void*);
-int (*my_pthread_mutex_unlock)(void*);
+int (*my_pthread_mutex_try_lock)(void *);
+int (*my_pthread_mutex_unlock)(void *);
 void (*my_pthread_attr_init)(void);
 void (*my_pthread_attr_destroy)(void);
 void (*my_pthread_cond_init)(void);

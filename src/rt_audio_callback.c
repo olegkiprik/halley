@@ -535,26 +535,26 @@ static ALWAYS_INLINE void audio_store_f32(void *p, F32 v)
 	*(F32 *)p = v;
 }
 
-#define GENERATE_rt_audio_callback(in, out, fft_k, i_sizeofbits, o_sizeofbits, n_active_channels, n_all_channels)              \
+#define GENERATE_rt_audio_callback(in, out, fft_k, i_sizeofbits, o_sizeofbits, n_active_channels, n_all_channels)                       \
 	NOINLINE void rt_audio_callback_##in##_##out##_##fft_k##_##n_active_channels##_##n_all_channels(ma_device *restrict p_device,   \
-											       void *restrict p_output,        \
-											       const void *restrict p_input,   \
-											       ma_uint32 frame_count_ma_param) \
-	{                                                                                                                      \
-		ALIGNAS(SIMD_NBYTES)                                                                                           \
-		F32 samples_ri[(1uLL << fft_k) * 2];                                                                           \
-                                                                                                                               \
-		ALIGNAS(SIMD_NBYTES)                                                                                           \
-		F32 dft_ri[(1uLL << fft_k) * 2];                                                                               \
-                                                                                                                               \
-		ALIGNAS(SIMD_NBYTES)                                                                                           \
-		F32 invsamples_ri[(1uLL << fft_k) * 2];                                                                        \
-                                                                                                                               \
-		ALIGNAS(SIMD_NBYTES)                                                                                           \
-		F32 tmp_inv_samples[(1uLL << fft_k) / 4];                                                                      \
-                                                                                                                               \
-		F32 extended_dft[(1uLL << fft_k) / 2 * 4 * 2];                                                                 \
-                                                                                                                               \
+													void *restrict p_output,        \
+													const void *restrict p_input,   \
+													ma_uint32 frame_count_ma_param) \
+	{                                                                                                                               \
+		ALIGNAS(SIMD_NBYTES)                                                                                                    \
+		F32 samples_ri[(1uLL << fft_k) * 2];                                                                                    \
+                                                                                                                                        \
+		ALIGNAS(SIMD_NBYTES)                                                                                                    \
+		F32 dft_ri[(1uLL << fft_k) * 2];                                                                                        \
+                                                                                                                                        \
+		ALIGNAS(SIMD_NBYTES)                                                                                                    \
+		F32 invsamples_ri[(1uLL << fft_k) * 2];                                                                                 \
+                                                                                                                                        \
+		ALIGNAS(SIMD_NBYTES)                                                                                                    \
+		F32 tmp_inv_samples[(1uLL << fft_k) / 4];                                                                               \
+                                                                                                                                        \
+		F32 extended_dft[(1uLL << fft_k) / 2 * 4 * 2];                                                                          \
+                                                                                                                                        \
 		/* clang-format off */ \
 		rt_audio_callback_impl(p_device, \
 			p_output, \
@@ -572,8 +572,8 @@ static ALWAYS_INLINE void audio_store_f32(void *p, F32 v)
 			i_sizeofbits / CHAR_BIT, \
 			audio_load_##in, \
 			audio_load_##out, \
-			audio_store_##out);                                                                                       \
-		/* clang-format on */                                                                                          \
+			audio_store_##out);                                                                                                \
+		/* clang-format on */                                                                                                   \
 	}
 
 /*
