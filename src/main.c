@@ -294,7 +294,7 @@ static const float main_color_r = 0.682352941f;
 static const float main_color_g = 0.643137255f;
 static const float main_color_b = 0.945098039f;
 
-static void failure_print_dec_u64(U64 num)
+static NOINLINE void failure_print_dec_u64(U64 num)
 {
 	if (num == 0) {
 		char c = '0';
@@ -319,7 +319,7 @@ static void failure_print_dec_u64(U64 num)
 	}
 }
 
-static void failure_print_string(const char *s)
+static NOINLINE void failure_print_string(const char *s)
 {
 	sys_write(STDERR_FILENO, s, naive_strlen(s), NULL);
 }

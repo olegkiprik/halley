@@ -409,7 +409,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 
 		fft_f32_outofplace(p_dft_ri, p_samples_ri, fft_k, 0);
 
-		for (U32 i = 0; i < (1 << 10); i += SIMD_N_32) {
+		for (U32 i = 0; i < 1 << 10; i += SIMD_N_32) {
 			F32_VEC result;
 			F32_VEC tmp0;
 			F32_VEC tmp1;
