@@ -10,7 +10,7 @@ Use at your own risk.
 
 ### Installation
 
-Use Clang to compile.
+Use GCC or Clang to compile.
 
 x86-64 Linux portable.
 

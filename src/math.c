@@ -123,8 +123,8 @@ static ALWAYS_INLINE BOOL_OUT cplx_mul_impl(void *resr, void *resi, void *r1, vo
 	}
 
 #define GENERATE_cplx_mul(type, nvec)                                                                                                                                            \
-	static ALWAYS_INLINE BOOL_OUT cplx_mul_##type##x##nvec(type##x##nvec *restrict resr, type##x##nvec *restrict resi, type##x##nvec r1, type##x##nvec i1, type##x##nvec r2, \
-							       type##x##nvec i2)                                                                                                 \
+	static ALWAYS_INLINE BOOL_OUT cplx_mul_##type##x##nvec(type##x##nvec##u *restrict resr, type##x##nvec##u *restrict resi, type##x##nvec##u r1, type##x##nvec##u i1, type##x##nvec##u r2, \
+							       type##x##nvec##u i2)                                                                                                 \
 	{                                                                                                                                                                        \
 		type##x##nvec buf1;                                                                                                                                              \
 		type##x##nvec buf2;                                                                                                                                              \
@@ -139,8 +139,8 @@ static ALWAYS_INLINE BOOL_OUT cplx_mul_impl(void *resr, void *resi, void *r1, vo
 	}
 
 #define GENERATE_cplx_div(type, nvec)                                                                                                                                            \
-	static ALWAYS_INLINE BOOL_OUT cplx_div_##type##x##nvec(type##x##nvec *restrict resr, type##x##nvec *restrict resi, type##x##nvec r1, type##x##nvec i1, type##x##nvec r2, \
-							       type##x##nvec i2)                                                                                                 \
+	static ALWAYS_INLINE BOOL_OUT cplx_div_##type##x##nvec(type##x##nvec##u *restrict resr, type##x##nvec##u *restrict resi, type##x##nvec##u r1, type##x##nvec##u i1, type##x##nvec##u r2, \
+							       type##x##nvec##u i2)                                                                                                 \
 	{                                                                                                                                                                        \
 		type##x##nvec a;                                                                                                                                                 \
 		type##x##nvec b;                                                                                                                                                 \
@@ -186,8 +186,8 @@ static ALWAYS_INLINE BOOL_OUT cplx_mul_impl(void *resr, void *resi, void *r1, vo
 	}
 
 #define GENERATE_cplx_sqrt(type, nvec)                                                                                                                       \
-	static ALWAYS_INLINE BOOL_OUT cplx_sqrt_##type##x##nvec(type##x##nvec *restrict resr1, type##x##nvec *restrict resi1, type##x##nvec *restrict resr2, \
-								type##x##nvec *restrict resi2, type##x##nvec re, type##x##nvec im)                           \
+	static ALWAYS_INLINE BOOL_OUT cplx_sqrt_##type##x##nvec(type##x##nvec##u *restrict resr1, type##x##nvec##u *restrict resi1, type##x##nvec##u *restrict resr2, \
+								type##x##nvec##u *restrict resi2, type##x##nvec##u re, type##x##nvec##u im)                           \
 	{                                                                                                                                                    \
 		type##x##nvec aa_bb;                                                                                                                         \
 		aa_bb = re * re + im * im;                                                                                                                   \
@@ -228,8 +228,8 @@ static ALWAYS_INLINE BOOL_OUT cplx_mul_impl(void *resr, void *resi, void *r1, vo
 	}
 
 #define GENERATE_cplx_rsqrt(type, nvec)                                                                                                                       \
-	static ALWAYS_INLINE BOOL_OUT cplx_rsqrt_##type##x##nvec(type##x##nvec *restrict resr1, type##x##nvec *restrict resi1, type##x##nvec *restrict resr2, \
-								 type##x##nvec *restrict resi2, type##x##nvec re, type##x##nvec im)                           \
+	static ALWAYS_INLINE BOOL_OUT cplx_rsqrt_##type##x##nvec(type##x##nvec##u *restrict resr1, type##x##nvec##u *restrict resi1, type##x##nvec##u *restrict resr2, \
+								 type##x##nvec##u *restrict resi2, type##x##nvec##u re, type##x##nvec##u im)                           \
 	{                                                                                                                                                     \
 		type##x##nvec aa_bb;                                                                                                                          \
 		aa_bb = re * re + im * im;                                                                                                                    \
@@ -364,8 +364,99 @@ static ALWAYS_INLINE BOOL_OUT cplx_mul_impl(void *resr, void *resi, void *r1, vo
 #define u64x16 U64_16
 #define f64x16 F64_16
 
+#define s8u S8
+#define u8u U8
+#define s8x1u s8u
+#define u8x1u u8u
+
+#define s16u S16
+#define u16u U16
+#define f5e11su F5E11S
+#define f8e8su F8E8S
+#define s16x1u s16u
+#define u16x1u u16u
+#define f5e11sx1u f5e11su
+#define f8e8sx1u f8e8su
+
+#define s32u S32
+#define u32u U32
+#define f32u F32
+#define s32x1u s32u
+#define u32x1u u32u
+#define f32x1u f32u
+
+#define s64u S64
+#define u64u U64
+#define f64u F64
+#define s64x1u s64u
+#define u64x1u u64u
+#define f64x1u f64u
+#define s8x8u S8_8_NO_ALIGNED
+#define u8x8u U8_8_NO_ALIGNED
+#define s16x4u S16_4_NO_ALIGNED
+#define u16x4u U16_4_NO_ALIGNED
+#define f5e11sx4u F5E11S_4_NO_ALIGNED
+#define f8e8sx4u F8E8S_4_NO_ALIGNED
+#define s32x2u S32_2_NO_ALIGNED
+#define u32x2u U32_2_NO_ALIGNED
+#define f32x2u F32_2_NO_ALIGNED
+
+#define s128u S128
+#define u128u U128
+#define s8x16u S8_16_NO_ALIGNED
+#define u8x16u U8_16_NO_ALIGNED
+#define s16x8u S16_8_NO_ALIGNED
+#define u16x8u U16_8_NO_ALIGNED
+#define f5e11sx8u F5E11S_8_NO_ALIGNED
+#define f8e8sx8u F8E8S_8_NO_ALIGNED
+#define s32x4u S32_4_NO_ALIGNED
+#define u32x4u U32_4_NO_ALIGNED
+#define f32x4u F32_4_NO_ALIGNED
+#define s64x2u S64_2_NO_ALIGNED
+#define u64x2u U64_2_NO_ALIGNED
+#define f64x2u F64_2_NO_ALIGNED
+
+#define s8x32u S8_32_NO_ALIGNED
+#define u8x32u U8_32_NO_ALIGNED
+#define s16x16u S16_16_NO_ALIGNED
+#define u16x16u U16_16_NO_ALIGNED
+#define f5e11sx16u F5E11S_16_NO_ALIGNED
+#define f8e8sx16u F8E8S_16_NO_ALIGNED
+#define s32x8u S32_8_NO_ALIGNED
+#define u32x8u U32_8_NO_ALIGNED
+#define f32x8u F32_8_NO_ALIGNED
+#define s64x4u S64_4_NO_ALIGNED
+#define u64x4u U64_4_NO_ALIGNED
+#define f64x4u F64_4_NO_ALIGNED
+
+#define s8x64u S8_64_NO_ALIGNED
+#define u8x64u U8_64_NO_ALIGNED
+#define s16x32u S16_32_NO_ALIGNED
+#define u16x32u U16_32_NO_ALIGNED
+#define f5e11sx32u F5E11S_32_NO_ALIGNED
+#define f8e8sx32u F8E8S_32_NO_ALIGNED
+#define s32x16u S32_16_NO_ALIGNED
+#define u32x16u U32_16_NO_ALIGNED
+#define f32x16u F32_16_NO_ALIGNED
+#define s64x8u S64_8_NO_ALIGNED
+#define u64x8u U64_8_NO_ALIGNED
+#define f64x8u F64_8_NO_ALIGNED
+
+#define s8x128u S8_128_NO_ALIGNED
+#define u8x128u U8_128_NO_ALIGNED
+#define s16x64u S16_64_NO_ALIGNED
+#define u16x64u U16_64_NO_ALIGNED
+#define f5e11sx64u F5E11S_64_NO_ALIGNED
+#define f8e8sx64u F8E8S_64_NO_ALIGNED
+#define s32x32u S32_32_NO_ALIGNED
+#define u32x32u U32_32_NO_ALIGNED
+#define f32x32u F32_32_NO_ALIGNED
+#define s64x16u S64_16_NO_ALIGNED
+#define u64x16u U64_16_NO_ALIGNED
+#define f64x16u F64_16_NO_ALIGNED
+
 #ifndef NO_SIMD_128
-static ALWAYS_INLINE f32 sqrt_f32(f32 x)
+static ALWAYS_INLINE f32 sqrt_f32(F32 x)
 {
 	f32x4 xx;
 	f32x4 yy;
@@ -384,7 +475,7 @@ static ALWAYS_INLINE f32 sqrt_f32(f32 x)
 	return yy[0];
 }
 
-static ALWAYS_INLINE f64 sqrt_f64(f64 x)
+static ALWAYS_INLINE f64 sqrt_f64(F64 x)
 {
 
 	f64x2 xx;
@@ -404,7 +495,7 @@ static ALWAYS_INLINE f64 sqrt_f64(f64 x)
 #endif
 
 #ifndef NO_SIMD_128
-static ALWAYS_INLINE f32x4 sqrt_f32x4(f32x4 x)
+static ALWAYS_INLINE f32x4 sqrt_f32x4(F32_4_NO_ALIGNED x)
 {
 	f32x4 yy;
 
@@ -416,7 +507,7 @@ static ALWAYS_INLINE f32x4 sqrt_f32x4(f32x4 x)
 	return yy;
 }
 
-static ALWAYS_INLINE f64x2 sqrt_f64x2(f64x2 x)
+static ALWAYS_INLINE f64x2 sqrt_f64x2(F64_2_NO_ALIGNED x)
 {
 	f64x2 yy;
 
@@ -430,7 +521,7 @@ static ALWAYS_INLINE f64x2 sqrt_f64x2(f64x2 x)
 #endif
 
 #ifndef NO_SIMD_256
-static ALWAYS_INLINE f32x8 sqrt_f32x8(f32x8 x)
+static ALWAYS_INLINE f32x8 sqrt_f32x8(F32_8_NO_ALIGNED x)
 {
 
 #if 1
@@ -464,7 +555,7 @@ static ALWAYS_INLINE f32x8 sqrt_f32x8(f32x8 x)
 #endif
 }
 
-static ALWAYS_INLINE f64x4 sqrt_f64x4(f64x4 x)
+static ALWAYS_INLINE f64x4 sqrt_f64x4(F64_4_NO_ALIGNED x)
 {
 #if 1
 	f64x2 xx;
@@ -491,7 +582,7 @@ static ALWAYS_INLINE f64x4 sqrt_f64x4(f64x4 x)
 #endif
 
 #ifndef NO_SIMD_512
-static ALWAYS_INLINE f32x16 sqrt_f32x16(f32x16 x)
+static ALWAYS_INLINE f32x16 sqrt_f32x16(F32_16_NO_ALIGNED x)
 {
 	f32x4 xx;
 	f32x4 y0;
@@ -538,7 +629,7 @@ static ALWAYS_INLINE f32x16 sqrt_f32x16(f32x16 x)
 	return y;
 }
 
-static ALWAYS_INLINE f64x8 sqrt_f64x8(f64x8 x)
+static ALWAYS_INLINE f64x8 sqrt_f64x8(F64_8_NO_ALIGNED x)
 {
 
 #if 1
@@ -581,7 +672,7 @@ static ALWAYS_INLINE f64x8 sqrt_f64x8(f64x8 x)
 #endif
 
 #ifndef NO_SIMD_1024
-static ALWAYS_INLINE f32x32 sqrt_f32x32(f32x32 x)
+static ALWAYS_INLINE f32x32 sqrt_f32x32(F32_32_NO_ALIGNED x)
 {
 	f32x4 xx;
 	f32x4 y0;
@@ -671,7 +762,7 @@ static ALWAYS_INLINE f32x32 sqrt_f32x32(f32x32 x)
 	return y;
 }
 
-static ALWAYS_INLINE f64x16 sqrt_f64x16(f64x16 x)
+static ALWAYS_INLINE f64x16 sqrt_f64x16(F64_16_NO_ALIGNED x)
 {
 	f64x2 xx;
 	f64x2 y0;
@@ -732,7 +823,7 @@ static ALWAYS_INLINE f64x16 sqrt_f64x16(f64x16 x)
 #endif
 
 #if !defined(NO_SIMD_1024)
-static ALWAYS_INLINE f32x32 rsqrt_f32x32(f32x32 x)
+static ALWAYS_INLINE f32x32 rsqrt_f32x32(F32_32_NO_ALIGNED x)
 {
 	f32x4 xx;
 	f32x4 y0;
@@ -820,7 +911,7 @@ static ALWAYS_INLINE f32x32 rsqrt_f32x32(f32x32 x)
 }
 #endif
 #if !defined(NO_SIMD_512)
-static ALWAYS_INLINE f32x16 rsqrt_f32x16(f32x16 x)
+static ALWAYS_INLINE f32x16 rsqrt_f32x16(F32_16_NO_ALIGNED x)
 {
 #if 1
 	f32x4 xx;
@@ -875,7 +966,7 @@ static ALWAYS_INLINE f32x16 rsqrt_f32x16(f32x16 x)
 
 #endif
 #if !defined(NO_SIMD_256)
-static ALWAYS_INLINE f32x8 rsqrt_f32x8(f32x8 x)
+static ALWAYS_INLINE f32x8 rsqrt_f32x8(F32_8_NO_ALIGNED x)
 {
 #if 1
 	f32x4 xx;
@@ -910,7 +1001,7 @@ static ALWAYS_INLINE f32x8 rsqrt_f32x8(f32x8 x)
 
 #endif
 #if !defined(NO_SIMD_128)
-static ALWAYS_INLINE f32x4 rsqrt_f32x4(f32x4 x)
+static ALWAYS_INLINE f32x4 rsqrt_f32x4(F32_4_NO_ALIGNED x)
 {
 	f32x4 yy;
 
@@ -924,7 +1015,7 @@ static ALWAYS_INLINE f32x4 rsqrt_f32x4(f32x4 x)
 
 #endif
 
-static ALWAYS_INLINE f32 rsqrt_f32(f32 x)
+static ALWAYS_INLINE f32 rsqrt_f32(F32 x)
 {
 	f32x4 xx;
 	f32x4 yy;
@@ -943,44 +1034,6 @@ static ALWAYS_INLINE f32 rsqrt_f32(f32 x)
 	return yy[0];
 }
 
-#define GENERATE_simd_load(type, nvec)                                          \
-	static ALWAYS_INLINE type##x##nvec simd_load_##type##x##nvec(type *mem) \
-	{                                                                       \
-		ASSUME_ALIGNED(&mem, sizeof(type) * 4);                         \
-		type##x##nvec result;                                           \
-		for (U32 i = 0; i < nvec; ++i) {                                \
-			result[i] = mem[i];                                     \
-		}                                                               \
-		return result;                                                  \
-	}
-
-#define GENERATE_simd_store(type, nvec)                                                    \
-	static ALWAYS_INLINE void simd_store_##type##x##nvec(type *mem, type##x##nvec vec) \
-	{                                                                                  \
-		ASSUME_ALIGNED(&mem, sizeof(type) * nvec);                                 \
-		for (U32 i = 0; i < nvec; ++i) {                                           \
-			mem[i] = vec[i];                                                   \
-		}                                                                          \
-	}
-
-#define GENERATE_simd_load_unaligned(type, nvec)                                          \
-	static ALWAYS_INLINE type##x##nvec simd_load_unaligned_##type##x##nvec(type *mem) \
-	{                                                                                 \
-		type##x##nvec result;                                                     \
-		for (U32 i = 0; i < nvec; ++i) {                                          \
-			result[i] = mem[i];                                               \
-		}                                                                         \
-		return result;                                                            \
-	}
-
-#define GENERATE_simd_store_unaligned(type, nvec)                                                    \
-	static ALWAYS_INLINE void simd_store_unaligned_##type##x##nvec(type *mem, type##x##nvec vec) \
-	{                                                                                            \
-		for (U32 i = 0; i < nvec; ++i) {                                                     \
-			mem[i] = vec[i];                                                             \
-		}                                                                                    \
-	}
-
 #define GENERATE_simd(type, nvec)                                         \
 	static ALWAYS_INLINE type##x##nvec simd_##type##x##nvec(type val) \
 	{                                                                 \
@@ -991,7 +1044,7 @@ static ALWAYS_INLINE f32 rsqrt_f32(f32 x)
 
 /* returns bit mask */
 #define GENERATE_simd_compare_less(type, masktype, nvec)                                                           \
-	static ALWAYS_INLINE masktype##x##nvec simd_compare_less_##type##x##nvec(type##x##nvec x, type##x##nvec y) \
+	static ALWAYS_INLINE masktype##x##nvec simd_compare_less_##type##x##nvec(type##x##nvec##u x, type##x##nvec##u y) \
 	{                                                                                                          \
 		masktype##x##nvec res;                                                                             \
 		for (U32 i = 0; i < nvec; ++i) {                                                                   \
@@ -1002,7 +1055,7 @@ static ALWAYS_INLINE f32 rsqrt_f32(f32 x)
 
 /* returns bit mask */
 #define GENERATE_simd_compare_less_eq(type, masktype, nvec)                                                           \
-	static ALWAYS_INLINE masktype##x##nvec simd_compare_less_eq_##type##x##nvec(type##x##nvec x, type##x##nvec y) \
+	static ALWAYS_INLINE masktype##x##nvec simd_compare_less_eq_##type##x##nvec(type##x##nvec##u x, type##x##nvec##u y) \
 	{                                                                                                             \
 		masktype##x##nvec res;                                                                                \
 		for (U32 i = 0; i < nvec; ++i) {                                                                      \
@@ -1013,7 +1066,7 @@ static ALWAYS_INLINE f32 rsqrt_f32(f32 x)
 
 /* returns bit mask */
 #define GENERATE_simd_compare_eq(type, masktype, nvec)                                                           \
-	static ALWAYS_INLINE masktype##x##nvec simd_compare_eq_##type##x##nvec(type##x##nvec x, type##x##nvec y) \
+	static ALWAYS_INLINE masktype##x##nvec simd_compare_eq_##type##x##nvec(type##x##nvec##u x, type##x##nvec##u y) \
 	{                                                                                                        \
 		masktype##x##nvec res;                                                                           \
 		for (U32 i = 0; i < nvec; ++i) {                                                                 \
@@ -1023,7 +1076,7 @@ static ALWAYS_INLINE f32 rsqrt_f32(f32 x)
 	}
 
 #define GENERATE_simd_compare_less_01(type, nvec)                                                                 \
-	static ALWAYS_INLINE type##x##nvec simd_compare_less_01_##type##x##nvec(type##x##nvec x, type##x##nvec y) \
+	static ALWAYS_INLINE type##x##nvec simd_compare_less_01_##type##x##nvec(type##x##nvec##u x, type##x##nvec##u y) \
 	{                                                                                                         \
 		type##x##nvec res;                                                                                \
 		for (U32 i = 0; i < nvec; ++i) {                                                                  \
@@ -1033,7 +1086,7 @@ static ALWAYS_INLINE f32 rsqrt_f32(f32 x)
 	}
 
 #define GENERATE_simd_compare_less_eq_01(type, nvec)                                                                 \
-	static ALWAYS_INLINE type##x##nvec simd_compare_less_eq_01_##type##x##nvec(type##x##nvec x, type##x##nvec y) \
+	static ALWAYS_INLINE type##x##nvec simd_compare_less_eq_01_##type##x##nvec(type##x##nvec##u x, type##x##nvec##u y) \
 	{                                                                                                            \
 		type##x##nvec res;                                                                                   \
 		for (U32 i = 0; i < nvec; ++i) {                                                                     \
@@ -1043,7 +1096,7 @@ static ALWAYS_INLINE f32 rsqrt_f32(f32 x)
 	}
 
 #define GENERATE_simd_compare_eq_01(type, nvec)                                                                 \
-	static ALWAYS_INLINE type##x##nvec simd_compare_eq_01_##type##x##nvec(type##x##nvec x, type##x##nvec y) \
+	static ALWAYS_INLINE type##x##nvec simd_compare_eq_01_##type##x##nvec(type##x##nvec##u x, type##x##nvec##u y) \
 	{                                                                                                       \
 		type##x##nvec res;                                                                              \
 		for (U32 i = 0; i < nvec; ++i) {                                                                \
@@ -1053,7 +1106,7 @@ static ALWAYS_INLINE f32 rsqrt_f32(f32 x)
 	}
 
 #define GENERATE_simd_cast(from, to, nvec)                                                     \
-	static ALWAYS_INLINE to##x##nvec simd_cast_##from##_to_##to##_x##nvec(from##x##nvec x) \
+	static ALWAYS_INLINE to##x##nvec simd_cast_##from##_to_##to##_x##nvec(from##x##nvec##u x) \
 	{                                                                                      \
 		to##x##nvec res;                                                               \
 		for (U32 i = 0; i < nvec; ++i) {                                               \
@@ -1094,63 +1147,68 @@ GENERATE_cplx_sqrt(f64, 8);
 
 GENERATE_simd_cast(s32, f32, 4);
 
+#if !defined(NO_SIMD_1024)
 GENERATE_simd_compare_less(f32, u32, 32);
 GENERATE_simd_compare_less_eq(f32, u32, 32);
 GENERATE_simd_compare_eq(f32, u32, 32);
 GENERATE_simd_compare_less_eq_01(f32, 32);
 GENERATE_simd_compare_eq_01(f32, 32);
 GENERATE_simd_compare_less_01(f32, 32);
+#endif
 
+#if !defined(NO_SIMD_512)
 GENERATE_simd_compare_less(f32, u32, 16);
 GENERATE_simd_compare_less_eq(f32, u32, 16);
 GENERATE_simd_compare_eq(f32, u32, 16);
 GENERATE_simd_compare_less_eq_01(f32, 16);
 GENERATE_simd_compare_eq_01(f32, 16);
 GENERATE_simd_compare_less_01(f32, 16);
+#endif
 
+#if !defined(NO_SIMD_256)
 GENERATE_simd_compare_less(f32, u32, 8);
 GENERATE_simd_compare_less_eq(f32, u32, 8);
 GENERATE_simd_compare_eq(f32, u32, 8);
 GENERATE_simd_compare_less_eq_01(f32, 8);
 GENERATE_simd_compare_eq_01(f32, 8);
 GENERATE_simd_compare_less_01(f32, 8);
+#endif
 
+#if !defined(NO_SIMD_128)
 GENERATE_simd_compare_less(f32, u32, 4);
 GENERATE_simd_compare_less_eq(f32, u32, 4);
 GENERATE_simd_compare_eq(f32, u32, 4);
 GENERATE_simd_compare_less_eq_01(f32, 4);
 GENERATE_simd_compare_eq_01(f32, 4);
 GENERATE_simd_compare_less_01(f32, 4);
+#endif
 
+#if !defined(NO_SIMD_64)
 GENERATE_simd_compare_less(f32, u32, 2);
 GENERATE_simd_compare_less_eq(f32, u32, 2);
 GENERATE_simd_compare_eq(f32, u32, 2);
 GENERATE_simd_compare_less_eq_01(f32, 2);
 GENERATE_simd_compare_eq_01(f32, 2);
 GENERATE_simd_compare_less_01(f32, 2);
+#endif
 
-GENERATE_simd_load(f32, 4);
-GENERATE_simd_load(f32, 8);
-GENERATE_simd_load(f32, 16);
-GENERATE_simd_load(f32, 32);
-GENERATE_simd_load(f64, 2);
-GENERATE_simd_load(f64, 4);
-GENERATE_simd_load(f64, 8);
-
-GENERATE_simd_store(f32, 4);
-GENERATE_simd_store(f32, 8);
-GENERATE_simd_store(f32, 16);
-GENERATE_simd_store(f32, 32);
-GENERATE_simd_store(f64, 2);
-GENERATE_simd_store(f64, 4);
-GENERATE_simd_store(f64, 8);
-
-GENERATE_simd(f32, 4);
+#if !defined(NO_SIMD_1024)
 GENERATE_simd(f32, 32);
+#endif
+
+#if !defined(NO_SIMD_512)
 GENERATE_simd(f32, 16);
+#endif
+
+#if !defined(NO_SIMD_256)
 GENERATE_simd(f32, 8);
+#endif
+
+#if !defined(NO_SIMD_128)
+GENERATE_simd(f32, 4);
 GENERATE_simd(u32, 4);
 GENERATE_simd(s32, 4);
+#endif
 
 GENERATE_add_impl(f32, 1);
 GENERATE_mul_impl(f32, 1);
@@ -1216,6 +1274,20 @@ GENERATE_cplx_mul(f32, 1);
 #undef f64
 #undef f8e8s
 #undef f5e11s
+#undef s8x1
+#undef s16x1
+#undef s32x1
+#undef s64x1
+#undef s128x1
+#undef u8x1
+#undef u16x1
+#undef u32x1
+#undef u64x1
+#undef u128x1
+#undef f32x1
+#undef f64x1
+#undef f8e8sx1
+#undef f5e11sx1
 #undef s8x8
 #undef s16x4
 #undef s32x2
@@ -1277,6 +1349,96 @@ GENERATE_cplx_mul(f32, 1);
 #undef f64x16
 #undef f8e8sx64
 #undef f5e11sx64
+
+#undef s8u
+#undef s16u
+#undef s32u
+#undef s64u
+#undef s128u
+#undef u8u
+#undef u16u
+#undef u32u
+#undef u64u
+#undef u128u
+#undef f32u
+#undef f64u
+#undef f8e8su
+#undef f5e11su
+#undef s8x1u
+#undef s16x1u
+#undef s32x1u
+#undef s64x1u
+#undef s128x1u
+#undef u8x1u
+#undef u16x1u
+#undef u32x1u
+#undef u64x1u
+#undef u128x1u
+#undef f32x1u
+#undef f64x1u
+#undef f8e8sx1u
+#undef f5e11sx1u
+#undef s8x8u
+#undef s16x4u
+#undef s32x2u
+#undef u8x8u
+#undef u16x4u
+#undef u32x2u
+#undef f32x2u
+#undef f8e8sx4u
+#undef f5e11sx4u
+#undef s8x16u
+#undef s16x8u
+#undef s32x4u
+#undef s64x2u
+#undef u8x16u
+#undef u16x8u
+#undef u32x4u
+#undef u64x2u
+#undef f32x4u
+#undef f64x2u
+#undef f8e8sx8u
+#undef f5e11sx8u
+#undef s8x32u
+#undef s16x16u
+#undef s32x8u
+#undef s64x4u
+#undef s128x2u
+#undef u8x32u
+#undef u16x16u
+#undef u32x8u
+#undef u64x4u
+#undef u128x2u
+#undef f32x8u
+#undef f64x4u
+#undef f8e8sx16u
+#undef f5e11sx16u
+#undef s8x64u
+#undef s16x32u
+#undef s32x16u
+#undef s64x8u
+#undef s128x4u
+#undef u8x64u
+#undef u16x32u
+#undef u32x16u
+#undef u64x8u
+#undef u128x4u
+#undef f32x16u
+#undef f64x8u
+#undef f8e8sx32u
+#undef f5e11sx32u
+#undef s8x128u
+#undef s16x64u
+#undef s32x32u
+#undef s64x16u
+#undef u8x128u
+#undef u16x64u
+#undef u32x32u
+#undef u64x16u
+#undef f32x32u
+#undef f64x16u
+#undef f8e8sx64u
+#undef f5e11sx64u
 
 #if !defined(M_PIf)
 #define M_PIf 3.14159265358979323846f

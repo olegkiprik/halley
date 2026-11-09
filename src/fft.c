@@ -50,7 +50,6 @@ static ALWAYS_INLINE void fft_f32_impl(F32 *dstri,
 	S64 n;
 
 	ALWAYS(k < 63);
-	ALWAYS(k >= 0);
 
 	n = (S64)(1uLL << k);
 	(*revcopy)(dstri, srcri, k);

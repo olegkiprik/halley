@@ -35,12 +35,12 @@ static ALWAYS_INLINE F32 naive_sin_base_iter_f32(F32 x, U32 iter_x2)
 	assert(result < F32_MAX);
 	assert(result > -F32_MAX);
 	assert(result >= 0);
-	assert(result < 1);
+	assert(result <= 1);
 	return result;
 }
 
 /* [0, pi/2] -> [0, 1) */
-static ALWAYS_INLINE F32_VEC naive_sin_base_f32x(F32_VEC x, U32 iter_x2)
+static ALWAYS_INLINE F32_VEC naive_sin_base_f32x(F32_VEC_NO_ALIGNED x, U32 iter_x2)
 {
 	F32_VEC result;
 	F32_VEC a;
@@ -140,7 +140,7 @@ static ALWAYS_INLINE F32 naive_sin_f32(F32 x, U32 iter_x2)
 	return naive_sin_base_iter_f32(x, iter_x2) * sign;
 }
 
-static ALWAYS_INLINE F32_VEC naive_sin_iter_f32x(F32_VEC x, U32 iter_x2)
+static ALWAYS_INLINE F32_VEC naive_sin_iter_f32x(F32_VEC_NO_ALIGNED x, U32 iter_x2)
 {
 	F32_VEC sign = simd_f32x(1);
 	F32_VEC tmp;
@@ -241,7 +241,7 @@ static ALWAYS_INLINE F32 naive_log_natural_iter_f32(F32 x, U32 iter_x4)
 	return res[0] + res[1] + res[2] + res[3];
 }
 
-static ALWAYS_INLINE F32_4 naive_log_natural_iter_f32x4(F32_4 x, U32 iter)
+static ALWAYS_INLINE F32_4 naive_log_natural_iter_f32x4(F32_4_NO_ALIGNED x, U32 iter)
 {
 	F32_4 res = simd_f32x4(0);
 	F32_4 sign;

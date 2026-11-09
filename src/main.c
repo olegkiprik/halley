@@ -732,8 +732,6 @@ static ALWAYS_INLINE int submain(void)
 		}
 	}
 
-	/* */
-
 	void *c = NULL;
 	void *p = NULL;
 

@@ -187,7 +187,6 @@ static int (*my_fileno)(FILE *);
 static int (*my_strncmp)(const char *a, const char *b, size_t n);
 static int (*my_vsnprintf)(char *restrict, size_t, const char *restrict, __builtin_va_list);
 static int (*my_snprintf)(char *restrict, size_t, const char *restrict, ...);
-static int (*my_printf)(const char *restrict, ...);
 static void *(*my_memset)(void *, int, size_t);
 
 #define dlopen(filename, flags) (*(void *(*)(const char *, int))my_dlopen)(filename, flags)

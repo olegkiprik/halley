@@ -10,26 +10,136 @@
 
 static ALWAYS_INLINE U8 bitreverse_8(U8 x)
 {
-	assert(x == (U8)x);
-	return __builtin_bitreverse8(x);
+	U8 tmp;
+
+	x = x << 4 | x >> 4;
+
+	tmp = x;
+	tmp &= 0x33;
+	tmp <<= 2;
+	x >>= 2;
+	x &= 0x33;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x55;
+	tmp <<= 1;
+	x >>= 1;
+	x &= 0x55;
+	x |= tmp;
+
+	return x;
 }
 
 static ALWAYS_INLINE U16 bitreverse_16(U16 x)
 {
-	assert(x == (U16)x);
-	return __builtin_bitreverse16(x);
+	U16 tmp;
+
+	x = x << 8 | x >> 8;
+
+	tmp = x;
+	tmp &= 0x0f0f;
+	tmp <<= 4;
+	x >>= 4;
+	x &= 0x0f0f;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x3333;
+	tmp <<= 2;
+	x >>= 2;
+	x &= 0x3333;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x5555;
+	tmp <<= 1;
+	x >>= 1;
+	x &= 0x5555;
+	x |= tmp;
+
+	return x;
 }
 
 static ALWAYS_INLINE U32 bitreverse_32(U32 x)
 {
-	assert(x == (U32)x);
-	return __builtin_bitreverse32(x);
+	U32 tmp;
+
+	x = x << 16 | x >> 16;
+
+	tmp = x;
+	tmp &= 0x00ff00ff;
+	tmp <<= 8;
+	x >>= 8;
+	x &= 0x00ff00ff;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x0f0f0f0f;
+	tmp <<= 4;
+	x >>= 4;
+	x &= 0x0f0f0f0f;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x33333333;
+	tmp <<= 2;
+	x >>= 2;
+	x &= 0x33333333;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x55555555;
+	tmp <<= 1;
+	x >>= 1;
+	x &= 0x55555555;
+	x |= tmp;
+
+	return x;
 }
 
 static ALWAYS_INLINE U64 bitreverse_64(U64 x)
 {
-	assert(x == (U64)x);
-	return __builtin_bitreverse64(x);
+	U64 tmp;
+
+	x = x << 32 | x >> 32;
+
+	tmp = x;
+	tmp &= 0x0000ffff0000ffff;
+	tmp <<= 16;
+	x >>= 16;
+	x &= 0x0000ffff0000ffff;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x00ff00ff00ff00ff;
+	tmp <<= 8;
+	x >>= 8;
+	x &= 0x00ff00ff00ff00ff;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x0f0f0f0f0f0f0f0f;
+	tmp <<= 4;
+	x >>= 4;
+	x &= 0x0f0f0f0f0f0f0f0f;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x3333333333333333;
+	tmp <<= 2;
+	x >>= 2;
+	x &= 0x3333333333333333;
+	x |= tmp;
+
+	tmp = x;
+	tmp &= 0x5555555555555555;
+	tmp <<= 1;
+	x >>= 1;
+	x &= 0x5555555555555555;
+	x |= tmp;
+
+	return x;
 }
 
 static ALWAYS_INLINE U128 bitreverse_128(U128 x)
@@ -47,71 +157,52 @@ static ALWAYS_INLINE U128 bitreverse_128(U128 x)
 
 static ALWAYS_INLINE U128 rotate_left_128(U128 x, U8 y)
 {
-	assert(x == (U128)x);
-	assert(y == (U8)y);
 	return x << y | x >> (128 - y);
 }
+
 static ALWAYS_INLINE U128 rotate_right_128(U128 x, U8 y)
 {
-	assert(x == (U128)x);
-	assert(y == (U8)y);
 	return x >> y | x << (128 - y);
 }
 
 static ALWAYS_INLINE U8 rotate_left_8(U8 x, U8 y)
 {
-	assert(x == (U8)x);
-	assert(y == (U8)y);
-	return __builtin_rotateleft8(x, y);
+	return x << y | x >> (8 - y);
 }
 
 static ALWAYS_INLINE U8 rotate_right_8(U8 x, U8 y)
 {
-	assert(x == (U8)x);
-	assert(y == (U8)y);
-	return __builtin_rotateright8(x, y);
+	return x >> y | x << (8 - y);
 }
 
 static ALWAYS_INLINE U16 rotate_left_16(U16 x, U8 y)
 {
-	assert(x == (U16)x);
-	assert(y == (U8)y);
-	return __builtin_rotateleft16(x, y);
+	return x << y | x >> (16 - y);
 }
 
 static ALWAYS_INLINE U16 rotate_right_16(U16 x, U8 y)
 {
-	assert(x == (U16)x);
-	assert(y == (U8)y);
-	return __builtin_rotateright16(x, y);
+	return x >> y | x << (16 - y);
 }
 
 static ALWAYS_INLINE U32 rotate_left_32(U32 x, U8 y)
 {
-	assert(x == (U32)x);
-	assert(y == (U8)y);
-	return __builtin_rotateleft32(x, y);
+	return x << y | x >> (32 - y);
 }
 
 static ALWAYS_INLINE U32 rotate_right_32(U32 x, U8 y)
 {
-	assert(x == (U32)x);
-	assert(y == (U8)y);
-	return __builtin_rotateright32(x, y);
+	return x >> y | x << (32 - y);
 }
 
 static ALWAYS_INLINE U64 rotate_left_64(U64 x, U8 y)
 {
-	assert(x == (U64)x);
-	assert(y == (U8)y);
-	return __builtin_rotateleft64(x, y);
+	return x << y | x >> (64 - y);
 }
 
 static ALWAYS_INLINE U64 rotate_right_64(U64 x, U8 y)
 {
-	assert(x == (U64)x);
-	assert(y == (U8)y);
-	return __builtin_rotateright64(x, y);
+	return x >> y | x << (64 - y);
 }
 
 static ALWAYS_INLINE void multiprecise_add_u32(U32 *restrict result, U32 *restrict carry_out, U32 x, U32 y,

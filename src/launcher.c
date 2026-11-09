@@ -185,7 +185,7 @@ typedef union unn_syscall_result_ {
 	void *p;
 } unn_syscall_result;
 
-__attribute__((always_inline)) static int exec_elf(const char *file, int argc, void *argv)
+__attribute__((always_inline)) __inline__ static int exec_elf(const char *file, int argc, void *argv)
 {
 	Elf_Ehdr ehdrs[2];
 	Elf_Ehdr *ehdr;

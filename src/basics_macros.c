@@ -45,6 +45,28 @@
 #define CATENATE(x, y) x##y
 #define CATENATE_VALUES(x, y) CATENATE(x, y)
 
+#ifndef MAY_ALIAS
+#define MAY_ALIAS __attribute__((__may_alias__))
+#endif
+
+/* clang-format off */
+typedef signed char       MAY_ALIAS priv_signed_char_may_alias_t;
+typedef unsigned char     MAY_ALIAS priv_unsigned_char_may_alias_t;
+typedef char              MAY_ALIAS priv_char_may_alias_t;
+typedef short             MAY_ALIAS priv_short_may_alias_t;
+typedef unsigned short    MAY_ALIAS priv_unsigned_short_may_alias_t;
+typedef int               MAY_ALIAS priv_int_may_alias_t;
+typedef unsigned int      MAY_ALIAS priv_unsigned_int_may_alias_t;
+typedef long              MAY_ALIAS priv_long_may_alias_t;
+typedef unsigned long     MAY_ALIAS priv_unsigned_long_may_alias_t;
+typedef __int128          MAY_ALIAS priv___int128_may_alias_t;
+typedef unsigned __int128 MAY_ALIAS priv_unsigned___int128_may_alias_t;
+typedef float             MAY_ALIAS priv_float_may_alias_t;
+typedef double            MAY_ALIAS priv_double_may_alias_t;
+typedef _Float16          MAY_ALIAS priv__Float16_may_alias_t;
+typedef __bf16            MAY_ALIAS priv___bf16_may_alias_t;
+/* clang-format on */
+
 #include "basic_types.c"
 
 #ifndef UMAX
@@ -401,7 +423,7 @@
 #define NOINLINE __attribute__((noinline))
 #endif
 #ifndef ALWAYS_INLINE
-#define ALWAYS_INLINE __attribute__((always_inline))
+#define ALWAYS_INLINE __attribute__((always_inline)) __inline__
 #endif
 #ifndef PRAGMA_DO_NOT_UNROLL
 #define PRAGMA_DO_NOT_UNROLL _Pragma("clang loop unroll(disable)")
@@ -535,9 +557,6 @@
 	do {                                                               \
 		*(pptr) = __builtin_assume_aligned(*(pptr), alignment, 0); \
 	} while (0 != 0)
-#endif
-#ifndef MAY_ALIAS
-#define MAY_ALIAS __attribute__((__may_alias__))
 #endif
 #ifndef PTR_ALIAS
 #define PTR_ALIAS(type, x) ((type)(x))

@@ -321,8 +321,8 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 					tmp0[j] = (F32)(i + j) / nn4 * M_PIf + M_PIf * 2 - M_PI_2f;
 				}
 
-				res = simd_load_f32x(p_fft_buffer_processed + i + nn4 * 3) + (naive_sin_iter_f32x(tmp0, 7) + simd_f32x(1)) / simd_f32x(2) * (simd_load_f32x(p_tmp_inv_samples + i) - simd_load_f32x(p_fft_buffer_processed + i + nn4 * 3));
-				simd_store_f32x(p_tmp_inv_samples + i, res);
+				res = *(F32_VEC_NO_ALIGNED *)(p_fft_buffer_processed + i + nn4 * 3) + (naive_sin_iter_f32x(tmp0, 7) + simd_f32x(1)) / simd_f32x(2) * (*(F32_VEC_NO_ALIGNED *)(p_tmp_inv_samples + i) - *(F32_VEC_NO_ALIGNED *)(p_fft_buffer_processed + i + nn4 * 3));
+				*(F32_VEC_NO_ALIGNED *)(p_tmp_inv_samples + i) = res;
 			}
 
 			naive_memcpy(p_fft_buffer_processed, p_tmp_inv_samples, nn4 * sizeof *p_fft_buffer_processed);
@@ -438,26 +438,6 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 	ATOMIC_FETCH_AND(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, (U8) ~(1u << 7), ATOMIC_ACQ_REL);
 }
 
-static ALWAYS_INLINE U8 raw_load_u8(const void *p)
-{
-	U8 res;
-#if defined(NO_STRICT_ALIASING)
-	res = *(U8 *)p;
-#else
-	asm volatile("movb (%1), %0" : "=r"(res) : "r"(p) : "memory");
-#endif
-	return res;
-}
-
-static ALWAYS_INLINE void raw_store_u8(void *p, U8 v)
-{
-#if defined(NO_STRICT_ALIASING)
-	*(U8 *)p = v;
-#else
-	asm volatile("movb %1, (%0)" ::"r"(p), "r"((U8)v) : "memory");
-#endif
-}
-
 static ALWAYS_INLINE F32 audio_load_s16(const void *p)
 {
 	return (F32) * (S16 *)p / -(S32)S16_MIN;
@@ -468,9 +448,9 @@ static ALWAYS_INLINE F32 audio_load_s24(const void *p)
 	STATIC_ASSERT(CHAR_BIT == 8);
 
 	U8 bytes[3];
-	bytes[0] = raw_load_u8((const char *)p + 0);
-	bytes[1] = raw_load_u8((const char *)p + 1);
-	bytes[2] = raw_load_u8((const char *)p + 2);
+	bytes[0] = *((const U8_RAW *)p + 0);
+	bytes[1] = *((const U8_RAW *)p + 1);
+	bytes[2] = *((const U8_RAW *)p + 2);
 
 	U32 data_raw = 0;
 	/* little endian */
@@ -521,9 +501,9 @@ static ALWAYS_INLINE void audio_store_s24(void *p, F32 v)
 	}
 
 	/* little endian */
-	raw_store_u8((char *)p + 0, data_raw >> CHAR_BIT * 0);
-	raw_store_u8((char *)p + 1, data_raw >> CHAR_BIT * 1);
-	raw_store_u8((char *)p + 2, data_raw >> CHAR_BIT * 2);
+	*((U8_RAW *)p + 0) = data_raw >> CHAR_BIT * 0;
+	*((U8_RAW *)p + 1) = data_raw >> CHAR_BIT * 1;
+	*((U8_RAW *)p + 2) = data_raw >> CHAR_BIT * 2;
 }
 
 static ALWAYS_INLINE void audio_store_s32(void *p, F32 v)

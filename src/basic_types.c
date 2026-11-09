@@ -48,3 +48,53 @@
 #ifndef F64
 #define F64 F11E53S
 #endif
+
+#ifndef S8_RAW
+#define S8_RAW priv_signed_char_may_alias_t
+#endif
+#ifndef S16_RAW
+#define S16_RAW priv_short_may_alias_t
+#endif
+#ifndef S32_RAW
+#define S32_RAW priv_int_may_alias_t
+#endif
+#ifndef S64_RAW
+#define S64_RAW priv_long_long_may_alias_t
+#endif
+#ifndef S128_RAW
+#define S128_RAW priv___int128_may_alias_t
+#endif
+#ifndef U8_RAW
+#define U8_RAW priv_unsigned_char_may_alias_t
+#endif
+#ifndef U16_RAW
+#define U16_RAW priv_unsigned_short_may_alias_t
+#endif
+#ifndef U32_RAW
+#define U32_RAW priv_unsigned_int_may_alias_t
+#endif
+#ifndef U64_RAW
+#define U64_RAW priv_unsigned_long_long_may_alias_t
+#endif
+#ifndef U128_RAW
+#define U128_RAW priv_unsigned___int128_may_alias_t
+#endif
+#ifndef F5E11S_RAW
+#define F5E11S_RAW priv__Float16_may_alias_t
+#endif
+#ifndef F8E8S_RAW
+#define F8E8S_RAW priv___bf16_may_alias_t
+#endif
+#ifndef F8E24S_RAW
+#define F8E24S_RAW priv_float_may_alias_t
+#endif
+#ifndef F11E53S_RAW
+#define F11E53S_RAW priv_double_may_alias_t
+#endif
+
+#ifndef F32_RAW
+#define F32_RAW F8E24S_RAW
+#endif
+#ifndef F64_RAW
+#define F64_RAW F11E53S_RAW
+#endif
