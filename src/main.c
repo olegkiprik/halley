@@ -425,6 +425,8 @@ U32 fft_phase_frames[2];
 pthread_mutex_t vert_mutex = PTHREAD_MUTEX_INITIALIZER;
 int tmpphase = 0;
 
+F32 lp_prev = 0;
+
 ALIGNAS(SIMD_NBYTES)
 F32 fft_buffer_original[(1uLL << MAX_K) * 2];
 
@@ -657,12 +659,14 @@ char **gl_argv;
 
 static THREAD_LOCAL char tls_failure_report[4096];
 
-static NOINLINE void tls_fail(void *user_report, void *dev_report)
-{
-#if !defined(DEV_REPORT)
-	(void)dev_report;
+#ifndef DEV_REPORT
+#define DEV_REPORT_FLAG 0
+#else
+#define DEV_REPORT_FLAG 1
 #endif
 
+static NOINLINE void tls_fail(void *user_report, void *dev_report)
+{
 	U64 i;
 	U64 n;
 	S32 newline_done;
@@ -693,28 +697,28 @@ static NOINLINE void tls_fail(void *user_report, void *dev_report)
 		}
 	}
 
-#if defined(DEV_REPORT)
+	if (DEV_REPORT_FLAG) {
+		if (dev_report != NULL) {
+			tls_failure_report[i] = newline_done ? ' ' : '\n';
+			newline_done = 1;
+			++i;
 
-	if (dev_report != NULL) {
-		tls_failure_report[i] = newline_done ? ' ' : '\n';
-		newline_done = 1;
-		++i;
+			if (i == sizeof tls_failure_report - 1) {
+				return;
+			}
 
-		if (i == sizeof tls_failure_report - 1) {
-			return;
+			n = naive_strlen(dev_report);
+			n = MIN(n, sizeof tls_failure_report - 1 - i);
+			naive_memcpy(tls_failure_report + i, dev_report, n);
+			i += n;
+
+			if (i == sizeof tls_failure_report - 1) {
+				return;
+			}
 		}
-
-		n = naive_strlen(dev_report);
-		n = MIN(n, sizeof tls_failure_report - 1 - i);
-		naive_memcpy(tls_failure_report + i, dev_report, n);
-		i += n;
-
-		if (i == sizeof tls_failure_report - 1) {
-			return;
-		}
+	} else {
+		(void)dev_report;
 	}
-
-#endif
 }
 
 static ALWAYS_INLINE int submain(void)
@@ -1301,7 +1305,15 @@ static ALWAYS_INLINE int submain(void)
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof audio_vert.time, sizeof audio_vert.freq, audio_vert.freq);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof audio_vert.time + sizeof audio_vert.freq, sizeof audio_vert.phase, audio_vert.phase);
 
+	union u32_f32_ {
+		U32 u32;
+		F32 f32;
+	} u32_f32_conv;
+
 	ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, 14, ATOMIC_RELEASE);
+
+	u32_f32_conv.f32 = 0;
+	ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha_f32, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 
 	full_memory_fence();
 	if (RARELY(MA_SUCCESS != ma_device_start(&device))) {
@@ -1359,6 +1371,26 @@ static ALWAYS_INLINE int submain(void)
 				break;
 			}
 
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key1: {
+				u32_f32_conv.f32 = 0.0f;
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key2: {
+				u32_f32_conv.f32 = 0.5f;
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key3: {
+				u32_f32_conv.f32 = 0.9f;
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key4: {
+				u32_f32_conv.f32 = 0.99f;
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
 			case (U32)RGFW_keyPressed << 16 | RGFW_key1: {
 				U8 tmpxor = audio_thread_data_send;
 				audio_thread_data_send &= ~(7 << 1);

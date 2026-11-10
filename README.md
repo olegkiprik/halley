@@ -25,6 +25,7 @@ If unsure, replace N\_THREADS with 2.
 ### How to use
 
 Press <kbd>1-7</kbd> and <kbd>0</kbd> to change the mode.
+<kbd>Shift-3</kbd> to apply low-pass filtering
 <kbd>Shift-Q</kbd> to quit.
 <kbd>W</kbd> to apply window function on input.
 

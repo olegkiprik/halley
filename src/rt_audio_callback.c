@@ -29,6 +29,8 @@ extern ALIGNAS(SIMD_NBYTES) F32 buffer_for_visualization[1uLL << MAX_K];
 extern U32 fft_phase_frames[2]; /* 2 channels */
 extern void vert_mutex;
 
+extern F32 lp_prev;
+
 extern struct isolated_audio_vertices_ audio_vert;
 extern struct isolated_audio_thread_data_ audio_thread_data;
 
@@ -109,6 +111,14 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 	F32 *capture_iter;
 	S32 finish = 0;
 
+	union f32_u32_ {
+		F32 f32;
+		U32 u32;
+	} u32_f32_conv;
+
+	u32_f32_conv.u32 = ATOMIC_LOAD(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, ATOMIC_ACQUIRE);
+	F32 alpha = u32_f32_conv.f32;
+
 	while (*p_fft_phase_frames % nn4 + frame_count_iter >= nn4) {
 		U32 n_curr_frames;
 		U32 prev_phase;
@@ -127,9 +137,12 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 			capture_iter[i] = (*load)((const char *)p_input_iter + i * i_stride_bytes);
 		}
 		for (U32 i = 0; i < n_curr_frames; ++i) {
+			F32 lp_curr = playback_iter[i];
+			lp_prev = lp_prev * alpha + lp_curr * (1 - alpha);
 			for (U32 j = 0; j < o_duplication; ++j) {
-				(*store)((char *)p_output_iter + i * o_stride_bytes + j * o_sizeof, min_f32(max_f32(playback_iter[i], -1), 1));
+				(*store)((char *)p_output_iter + i * o_stride_bytes + j * o_sizeof, min_f32(max_f32(lp_prev, -1), 1));
 			}
+
 		}
 
 		if (do_visualize) {
@@ -403,7 +416,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 
 		/* Hamming window */
 		for (U32 i = 0; i < nn / 2; ++i) {
-			F32 tmp = 0.53836f + 0.46164f * naive_sin_f32(M_PIf * i / nn, 7);
+			F32 tmp = 0.53836f + 0.46164f * naive_sin_f32(-M_PI_2f + M_PIf * i / nn * 2, 7);
 			p_samples_ri[i * 2 + 0] *= tmp;
 			p_samples_ri[(nn - i - 1) * 2 + 0] *= tmp;
 		}

@@ -9,6 +9,7 @@
 
 struct isolated_audio_thread_data_ {
 	char padding0[DESTRUCTIVE_INTERFERENCE_NBYTES];
+	ATOMIC U32 lp_alpha_f32;
 	ATOMIC U8 data; /* 1,2,3 active pitch shift, 0 apply window function on input fft, 7 callback on */
 	char padding1[DESTRUCTIVE_INTERFERENCE_NBYTES];
 };
