@@ -82,20 +82,8 @@ struct rt_audio_callback_param {
 	void (*store)(void *, F32);
 };
 
-static ALWAYS_INLINE void audio_process(void *restrict p_output, const void *restrict p_input, UPTR o_stride_bytes, UPTR i_stride_bytes, U32 o_duplication, U32 frame_count_ma, BOOL_IN do_visualize, U8 callbackdata, F32 *p_samples_ri, F32 *p_dft_ri, F32 *p_invsamples_ri, F32 *p_tmp_inv_samples, F32 *p_extended_dft, F32 *p_fft_buffer_original, F32 *p_fft_buffer_processed, U32 *p_fft_phase_frames, const struct rt_audio_callback_param *restrict param)
+static ALWAYS_INLINE void audio_process(void *restrict p_output, const void *restrict p_input, UPTR o_stride_bytes, UPTR i_stride_bytes, U32 o_duplication, U32 frame_count_ma, BOOL_IN do_visualize, U8 callbackdata, F32 *p_samples_ri, F32 *p_dft_ri, F32 *p_invsamples_ri, F32 *p_tmp_inv_samples, F32 *p_extended_dft, F32 *p_fft_buffer_original, F32 *p_fft_buffer_processed, U32 *p_fft_phase_frames, F32 lp_alpha, const struct rt_audio_callback_param *restrict param)
 {
-
-#if 0
-	ALIGNAS(SIMD_NBYTES)
-	F32 samples_ri[(1uLL << FFT_K) * 2];
-
-	ALIGNAS(SIMD_NBYTES)
-	F32 dft_ri[(1uLL << FFT_K) * 2];
-
-	ALIGNAS(SIMD_NBYTES)
-	F32 invsamples_ri[(1uLL << FFT_K) * 2];
-#endif
-
 	U32 nn = 1uLL << param->fft_k;
 	U32 nn4 = nn / 4;
 
@@ -109,14 +97,6 @@ static ALWAYS_INLINE void audio_process(void *restrict p_output, const void *res
 	F32 *playback_iter;
 	F32 *capture_iter;
 	S32 finish = 0;
-
-	union f32_u32_ {
-		F32 f32;
-		U32 u32;
-	} u32_f32_conv;
-
-	u32_f32_conv.u32 = ATOMIC_LOAD(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, ATOMIC_ACQUIRE);
-	F32 alpha = u32_f32_conv.f32;
 
 	while (*p_fft_phase_frames % nn4 + frame_count_iter >= nn4) {
 		U32 n_curr_frames;
@@ -137,7 +117,7 @@ static ALWAYS_INLINE void audio_process(void *restrict p_output, const void *res
 		}
 		for (U32 i = 0; i < n_curr_frames; ++i) {
 			F32 lp_curr = playback_iter[i];
-			lp_prev = lp_prev * alpha + lp_curr * (1 - alpha);
+			lp_prev = lp_prev * lp_alpha + lp_curr * (1 - lp_alpha);
 			for (U32 j = 0; j < o_duplication; ++j) {
 				(*param->store)((char *)p_output_iter + i * o_stride_bytes + j * param->o_sizeof, min_f32(max_f32(lp_prev, -1), 1));
 			}
@@ -383,15 +363,23 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 
 	U32 nn = 1uLL << param->fft_k;
 
+	union f32_u32_ {
+		F32 f32;
+		U32 u32;
+	} u32_f32_conv;
+
+	u32_f32_conv.u32 = ATOMIC_LOAD(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, ATOMIC_ACQUIRE);
+	F32 alpha = u32_f32_conv.f32;
+
 	if (param->n_active_channels == 1) {
 		audio_process(p_output, p_input, REQUESTED_PLAYBACK_N_CHANNELS * param->o_sizeof, param->n_all_channels * param->i_sizeof, REQUESTED_PLAYBACK_N_CHANNELS, frame_count_ma, 1,
 			      callbackdata,
-			      p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original, fft_buffer_processed, fft_phase_frames, param);
+			      p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original, fft_buffer_processed, fft_phase_frames, alpha, param);
 	} else if (param->n_active_channels == REQUESTED_PLAYBACK_N_CHANNELS) {
 		for (U32 i = 0; i < REQUESTED_PLAYBACK_N_CHANNELS; ++i) {
 			audio_process((char *)p_output + param->o_sizeof * i, (char *)p_input + param->i_sizeof * i,
 				      REQUESTED_PLAYBACK_N_CHANNELS * param->o_sizeof, param->n_all_channels * param->i_sizeof, 1, frame_count_ma, i == 0, callbackdata,
-				      p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original + i * (1uLL << MAX_K), fft_buffer_processed + i * (1uLL << MAX_K), fft_phase_frames + i, param);
+				      p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original + i * (1uLL << MAX_K), fft_buffer_processed + i * (1uLL << MAX_K), fft_phase_frames + i, alpha, param);
 		}
 	} else {
 		assert(0);
@@ -447,6 +435,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 	full_memory_fence();
 	ATOMIC_FETCH_AND(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, (U8) ~(1u << 7), ATOMIC_ACQ_REL);
 }
+
 
 static ALWAYS_INLINE F32 audio_load_s16(const void *p)
 {
