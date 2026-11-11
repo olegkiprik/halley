@@ -4,12 +4,12 @@
 #include "naive.c"
 #endif
 
-typedef union union_syscall_result_ {
+union syscall_result {
 	S64 l;
 	U64 ul;
 	void *p;
 	void (*fp)(void);
-} union_syscall_result;
+};
 
 /* io */
 #define SYS_WRITE 0x01
@@ -216,27 +216,27 @@ typedef union union_syscall_result_ {
  * https://github.com/kraj/musl/blob/kraj/master/arch/
  */
 
-static ALWAYS_INLINE void priv_syscall0(U64 n, union_syscall_result *res)
+static ALWAYS_INLINE void priv_syscall0(U64 n, union syscall_result *res)
 {
 	asm volatile("syscall" : "=a"(*res) : "a"(n) : "rcx", "r11", "memory");
 }
 
-static ALWAYS_INLINE void priv_syscall1(U64 a1, U64 n, union_syscall_result *res)
+static ALWAYS_INLINE void priv_syscall1(U64 a1, U64 n, union syscall_result *res)
 {
 	asm volatile("syscall" : "=a"(*res) : "a"(n), "D"(a1) : "rcx", "r11", "memory");
 }
 
-static ALWAYS_INLINE void priv_syscall2(U64 a1, U64 a2, U64 n, union_syscall_result *res)
+static ALWAYS_INLINE void priv_syscall2(U64 a1, U64 a2, U64 n, union syscall_result *res)
 {
 	asm volatile("syscall" : "=a"(*res) : "a"(n), "D"(a1), "S"(a2) : "rcx", "r11", "memory");
 }
 
-static ALWAYS_INLINE void priv_syscall3(U64 a1, U64 a2, U64 a3, U64 n, union_syscall_result *res)
+static ALWAYS_INLINE void priv_syscall3(U64 a1, U64 a2, U64 a3, U64 n, union syscall_result *res)
 {
 	asm volatile("syscall" : "=a"(*res) : "a"(n), "D"(a1), "S"(a2), "d"(a3) : "rcx", "r11", "memory");
 }
 
-static ALWAYS_INLINE void priv_syscall4(U64 a1, U64 a2, U64 a3, U64 a4, U64 n, union_syscall_result *res)
+static ALWAYS_INLINE void priv_syscall4(U64 a1, U64 a2, U64 a3, U64 a4, U64 n, union syscall_result *res)
 {
 	register U64 r10 asm("r10") = a4;
 	asm volatile("syscall"
@@ -246,7 +246,7 @@ static ALWAYS_INLINE void priv_syscall4(U64 a1, U64 a2, U64 a3, U64 a4, U64 n, u
 }
 
 static ALWAYS_INLINE void priv_syscall5(U64 a1, U64 a2, U64 a3, U64 a4, U64 a5, U64 n,
-					union_syscall_result *res)
+					union syscall_result *res)
 {
 	register U64 r10 asm("r10") = a4;
 	register U64 r8 asm("r8") = a5;
@@ -257,7 +257,7 @@ static ALWAYS_INLINE void priv_syscall5(U64 a1, U64 a2, U64 a3, U64 a4, U64 a5, 
 }
 
 static ALWAYS_INLINE void priv_syscall6(U64 a1, U64 a2, U64 a3, U64 a4, U64 a5, U64 a6, U64 n,
-					union_syscall_result *res)
+					union syscall_result *res)
 {
 	register U64 r10 asm("r10") = a4;
 	register U64 r8 asm("r8") = a5;

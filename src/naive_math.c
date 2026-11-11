@@ -189,6 +189,24 @@ static ALWAYS_INLINE void naive_sincos_wrapped_fft_f32(F32 x, F32 *res_sin, F32 
 	*res_cos = c;
 }
 
+static ALWAYS_INLINE F32 naive_exp_iter_f32(F32 x, U32 iter)
+{
+	F32 result;
+	F32 m;
+	S32 n;
+
+	result = 1;
+	n = 1;
+	m = x;
+	for (S32 i = 1; (U32)i < iter; ++i) {
+		result += m / n;
+		m *= x;
+		n *= i + 1;
+	}
+
+	return result;
+}
+
 static ALWAYS_INLINE F32 naive_log_natural_iter_f32(F32 x, U32 iter_x4)
 {
 	F32_4 res = simd_f32x4(0);

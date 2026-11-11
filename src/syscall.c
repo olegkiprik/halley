@@ -2,7 +2,7 @@
 
 static ALWAYS_INLINE void sys_exit(S32 status)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 	assert(status == (S32)status);
 	priv_syscall1((S64)status, SYS_EXIT, &rax);
 	(void)rax;
@@ -10,7 +10,7 @@ static ALWAYS_INLINE void sys_exit(S32 status)
 
 static ALWAYS_INLINE void sys_exit_group(S32 status)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 	assert(status == (S32)status);
 	priv_syscall1((S64)status, SYS_EXIT_GROUP, &rax);
 	(void)rax;
@@ -18,7 +18,7 @@ static ALWAYS_INLINE void sys_exit_group(S32 status)
 
 static ALWAYS_INLINE S64 sys_write(S64 fd, const void *restrict data, U64 nbytes, S64 *restrict result)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	ALWAYS(data != NULL);
 	ALWAYS(fd >= 0);
@@ -90,7 +90,7 @@ static ALWAYS_INLINE S64 write_no_eintr(S64 fd, const void *restrict data, U64 n
 
 static ALWAYS_INLINE S64 sys_read(S64 fd, void *restrict buf, U64 nbytes, S64 *restrict result)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	ALWAYS(buf != NULL);
 	ALWAYS(fd >= 0);
@@ -162,14 +162,14 @@ static ALWAYS_INLINE S64 read_no_eintr(S64 fd, void *restrict buf, U64 nbytes, S
 
 static ALWAYS_INLINE void sys_sync(void)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 	(void)priv_syscall0(SYS_SYNC, &rax);
 	(void)rax;
 }
 
 static ALWAYS_INLINE S64 sys_lseek(S64 fd, S64 offset, S64 whence, S64 *result)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	ALWAYS(fd >= 0);
 	ALWAYS(whence >= 0);
@@ -196,7 +196,7 @@ static ALWAYS_INLINE S64 sys_lseek(S64 fd, S64 offset, S64 whence, S64 *result)
 
 static ALWAYS_INLINE S64 sys_openat_uint(S64 dirfd, const void *restrict pathname, S64 flags, U64 mode, S32 *restrict result)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 	U64 dirfd_ul;
 
 	ALWAYS(result != NULL);
@@ -246,7 +246,7 @@ static ALWAYS_INLINE S64 sys_openat_uint(S64 dirfd, const void *restrict pathnam
 
 static ALWAYS_INLINE S64 sys_openat(S64 dirfd, const void *restrict pathname, S64 flags, S32 *restrict result)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 	U64 dirfd_ul;
 
 	ALWAYS(result != NULL);
@@ -295,7 +295,7 @@ static ALWAYS_INLINE S64 sys_openat(S64 dirfd, const void *restrict pathname, S6
 
 static ALWAYS_INLINE S64 sys_close(S64 fd)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	ALWAYS(fd >= 0);
 	ALWAYS(fd <= S32_MAX);
@@ -322,7 +322,7 @@ static ALWAYS_INLINE S64 sys_close(S64 fd)
 
 static ALWAYS_INLINE S64 sys_fsync(S64 fd)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	ALWAYS(fd >= 0);
 	ALWAYS(fd <= S32_MAX);
@@ -344,7 +344,7 @@ static ALWAYS_INLINE S64 sys_fsync(S64 fd)
 
 static ALWAYS_INLINE S64 sys_fdatasync(S64 fd)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	ALWAYS(fd >= 0);
 	ALWAYS(fd <= S32_MAX);
@@ -367,7 +367,7 @@ static ALWAYS_INLINE S64 sys_fdatasync(S64 fd)
 static ALWAYS_INLINE S64 sys_mmap(void *restrict addr, U64 length, S64 prot, S64 flags, S64 fd, S64 offset,
 				  void **restrict result)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 	U64 offset_ul;
 	U64 fd_ul;
 
@@ -416,7 +416,7 @@ static ALWAYS_INLINE S64 sys_mmap(void *restrict addr, U64 length, S64 prot, S64
 
 static ALWAYS_INLINE S64 sys_munmap(void *addr, U64 length)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	priv_syscall2((U64)addr, length, SYS_MUNMAP, &rax);
 	if (RARELY(rax.l < 0 && rax.l > -0x1000)) {
@@ -435,7 +435,7 @@ static ALWAYS_INLINE S64 sys_munmap(void *addr, U64 length)
 
 static ALWAYS_INLINE S64 sys_madvise(void *addr, U64 length, S64 advice)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	ALWAYS(addr != NULL);
 	ALWAYS(length != 0);
@@ -459,7 +459,7 @@ static ALWAYS_INLINE S64 sys_madvise(void *addr, U64 length, S64 advice)
 
 static ALWAYS_INLINE S64 sys_msync(void *addr, U64 length, S64 flags)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	ALWAYS(flags >= 0);
 	ALWAYS(flags <= S32_MAX);
@@ -481,7 +481,7 @@ static ALWAYS_INLINE S64 sys_msync(void *addr, U64 length, S64 flags)
 
 static ALWAYS_INLINE S64 sys_mlock2(const void *start, UPTR len, S32 flags)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	ALWAYS(flags >= 0);
 
@@ -502,7 +502,7 @@ static ALWAYS_INLINE S64 sys_mlock2(const void *start, UPTR len, S32 flags)
 
 static ALWAYS_INLINE S64 sys_munlock(const void *start, UPTR len)
 {
-	union_syscall_result rax;
+	union syscall_result rax;
 
 	priv_syscall2((UPTR)start, len, SYS_MUNLOCK, &rax);
 	if (RARELY(rax.l < 0 && rax.l > -0x1000)) {

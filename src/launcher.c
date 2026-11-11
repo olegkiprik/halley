@@ -179,11 +179,11 @@ static void elf_fini(void);
 PRIVATE void elf_fdl_entry();
 PRIVATE void elf_trampo(void (*entry)(void), unsigned long *sp, void (*fini)(void));
 
-typedef union unn_syscall_result_ {
+union syscall_result {
 	long l;
 	unsigned long ul;
 	void *p;
-} unn_syscall_result;
+};
 
 __attribute__((always_inline)) __inline__ static int exec_elf(const char *file, int argc, void *argv)
 {
@@ -201,7 +201,7 @@ __attribute__((always_inline)) __inline__ static int exec_elf(const char *file, 
 	int fd;
 	int i;
 	long tmpres;
-	unn_syscall_result vp;
+	union syscall_result vp;
 	unsigned long argv_sz;
 	void *p1;
 	unsigned int sz1;
@@ -399,7 +399,7 @@ static unsigned long loadelf_anon(int fd, Elf_Ehdr *restrict ehdr, Elf_Phdr *res
 	long tmpres;
 	unsigned long off;
 	void *start;
-	unn_syscall_result vp;
+	union syscall_result vp;
 
 	Elf_Phdr *iter;
 	char *p;
@@ -491,24 +491,24 @@ void elf_entry(void *restrict sp, void (*fini)(void))
 	sys_exit(main(argc, argv));
 }
 
-static void syscall1(unsigned long a1, unsigned long n, unn_syscall_result *res)
+static void syscall1(unsigned long a1, unsigned long n, union syscall_result *res)
 {
 	asm volatile("syscall" : "=a"(*res) : "a"(n), "D"(a1) : "rcx", "r11", "memory");
 }
 
-static void syscall2(unsigned long a1, unsigned long a2, unsigned long n, unn_syscall_result *res)
+static void syscall2(unsigned long a1, unsigned long a2, unsigned long n, union syscall_result *res)
 {
 	asm volatile("syscall" : "=a"(*res) : "a"(n), "D"(a1), "S"(a2) : "rcx", "r11", "memory");
 }
 
 static void syscall3(unsigned long a1, unsigned long a2, unsigned long a3, unsigned long n,
-		     unn_syscall_result *res)
+		     union syscall_result *res)
 {
 	asm volatile("syscall" : "=a"(*res) : "a"(n), "D"(a1), "S"(a2), "d"(a3) : "rcx", "r11", "memory");
 }
 
 static void syscall6(unsigned long a1, unsigned long a2, unsigned long a3, unsigned long a4, unsigned long a5,
-		     unsigned long a6, unsigned long n, unn_syscall_result *res)
+		     unsigned long a6, unsigned long n, union syscall_result *res)
 {
 	register unsigned long r10 asm("r10") = a4;
 	register unsigned long r8 asm("r8") = a5;
@@ -522,14 +522,14 @@ static void syscall6(unsigned long a1, unsigned long a2, unsigned long a3, unsig
 static void sys_exit(int status)
 {
 	/* too long assembly because of 'int' */
-	unn_syscall_result rax;
+	union syscall_result rax;
 	syscall1((long)status, SYS_EXIT, &rax);
 	(void)rax;
 }
 
 static long sys_mprotect(void *addr, size_t len, int prot)
 {
-	unn_syscall_result rax;
+	union syscall_result rax;
 
 	syscall3((unsigned long)addr, len, (unsigned long)prot, SYS_MPROTECT, &rax);
 	if (RARELY(rax.l < 0 && rax.l > -0x1000)) {
@@ -549,7 +549,7 @@ static long sys_mprotect(void *addr, size_t len, int prot)
 static long sys_mmap(void *restrict addr, unsigned long length, long prot, long flags, long fd, long offset,
 		     void **restrict result)
 {
-	unn_syscall_result rax;
+	union syscall_result rax;
 	unsigned long offset_ul;
 	unsigned long fd_ul;
 
@@ -599,7 +599,7 @@ static long sys_mmap(void *restrict addr, unsigned long length, long prot, long 
 
 static long sys_munmap(void *addr, unsigned long length)
 {
-	unn_syscall_result rax;
+	union syscall_result rax;
 
 	syscall2((unsigned long)addr, length, SYS_MUNMAP, &rax);
 	if (RARELY(rax.l < 0 && rax.l > -0x1000)) {
@@ -618,7 +618,7 @@ static long sys_munmap(void *addr, unsigned long length)
 
 static long sys_lseek(long fd, long offset, long whence, long *result)
 {
-	unn_syscall_result rax;
+	union syscall_result rax;
 
 	ASSERT(fd >= 0);
 	ASSERT(whence >= 0);
@@ -645,7 +645,7 @@ static long sys_lseek(long fd, long offset, long whence, long *result)
 
 static long sys_read(long fd, void *restrict buf, unsigned long nbytes, long *restrict result)
 {
-	unn_syscall_result rax;
+	union syscall_result rax;
 
 	ASSERT(buf != NULL);
 	ASSERT(fd >= 0);
@@ -678,7 +678,7 @@ static long sys_read(long fd, void *restrict buf, unsigned long nbytes, long *re
 
 static long sys_openat(long dirfd, const void *restrict pathname, long flags, int *restrict result)
 {
-	unn_syscall_result rax;
+	union syscall_result rax;
 	unsigned long dirfd_ul;
 
 	ASSERT(result != NULL);

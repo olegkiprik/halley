@@ -183,7 +183,7 @@ static BOOL_OUT init_all_pfn(void *c, void *p)
 	failed |= (int)(tmp == NULL);
 	my_errno_location = (void *)tmp;
 
-#if defined(RGFW_DEBUG) | defined(RGFW_PRINT_ERRORS) | defined(MA_DEBUG_OUTPUT)
+#if defined(RGFW_DEBUG) || defined(RGFW_PRINT_ERRORS) || defined(MA_DEBUG_OUTPUT)
 	tmp = dlsym(c, "printf");
 	failed |= (int)(tmp == NULL);
 	my_printf = (void *)tmp;
@@ -1371,23 +1371,63 @@ static ALWAYS_INLINE int submain(void)
 				break;
 			}
 
-			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key1: {
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key0: {
+				/*
+				 * x = -48000 * ln k
+				 *
+				 * x0
+				 * x0 * a^0.5 + x0 * (1-a^0.5) = x0
+				 * x0 * a^0.5 + x1 * (1-a^0.5)
+				 * x0 * a^1   + x1 * (a^0.5 - a) + x1 * (1-a^0.5) = x0 * a + x1 * (1-a)
+				 * x0 * a^1.5 + x1 * (a^0.5 - a^1.5) + x2 * (1-a^0.5)
+				 * x0 * a^2   + x1 * a * (1-a) + x2 * (a^0.5 - a) + x2 * (1-a^0.5) = x0 * a^2 + x1 * a * (1-a) + x2 * (1-a)
+				 */
 				u32_f32_conv.f32 = 0.0f;
 				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key1: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-77253.0198f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key2: {
-				u32_f32_conv.f32 = 0.5f;
+				u32_f32_conv.f32 = naive_exp_iter_f32(-43981.95513f / device.playback.internalSampleRate, 5);
 				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key3: {
-				u32_f32_conv.f32 = 0.9f;
+				u32_f32_conv.f32 = naive_exp_iter_f32(-24519.62994f / device.playback.internalSampleRate, 5);
 				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key4: {
-				u32_f32_conv.f32 = 0.99f;
+				u32_f32_conv.f32 = naive_exp_iter_f32(-17120.3973f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key5: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-10710.890463f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key6: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-5057.30475f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key7: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-2462.07813f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key8: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-969.72995f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key9: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-482.41612f / device.playback.internalSampleRate, 5);
 				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}

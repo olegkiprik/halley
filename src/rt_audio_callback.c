@@ -42,18 +42,10 @@ extern int (*my_pthread_mutex_unlock)(void *);
 #endif
 extern int tmpphase;
 
-void fft_f32_outofplace_10_impl(F32 *restrict dstri,
-				F32 *restrict srcri,
-				BOOL_IN rev);
-void fft_f32_outofplace_11_impl(F32 *restrict dstri,
-				F32 *restrict srcri,
-				BOOL_IN rev);
-void fft_f32_outofplace_12_impl(F32 *restrict dstri,
-				F32 *restrict srcri,
-				BOOL_IN rev);
-void fft_f32_outofplace_13_impl(F32 *restrict dstri,
-				F32 *restrict srcri,
-				BOOL_IN rev);
+void fft_f32_outofplace_10_impl(F32 *restrict dstri, F32 *restrict srcri, BOOL_IN rev);
+void fft_f32_outofplace_11_impl(F32 *restrict dstri, F32 *restrict srcri, BOOL_IN rev);
+void fft_f32_outofplace_12_impl(F32 *restrict dstri, F32 *restrict srcri, BOOL_IN rev);
+void fft_f32_outofplace_13_impl(F32 *restrict dstri, F32 *restrict srcri, BOOL_IN rev);
 
 static ALWAYS_INLINE void fft_f32_outofplace(F32 *restrict dstri,
 					     F32 *restrict srcri,
@@ -79,11 +71,18 @@ static ALWAYS_INLINE void fft_f32_outofplace(F32 *restrict dstri,
 	}
 }
 
-static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPTR o_stride_bytes, UPTR i_stride_bytes, U32 o_duplication, U32 frame_count_ma, BOOL_IN do_visualize,
-					U8 callbackdata,
-					U32 fft_k, F32 *p_samples_ri, F32 *p_dft_ri, F32 *p_invsamples_ri, F32 *p_tmp_inv_samples, F32 *p_extended_dft, F32 *p_fft_buffer_original, F32 *p_fft_buffer_processed, U32 *p_fft_phase_frames,
-					UPTR o_sizeof,
-					F32 (*load)(const void *), F32 (*load_back)(const void *), void (*store)(void *, F32))
+struct rt_audio_callback_param {
+	U32 fft_k;
+	U32 n_active_channels;
+	U32 n_all_channels;
+	UPTR o_sizeof;
+	UPTR i_sizeof;
+	F32 (*load)(const void *);
+	F32 (*load_back)(const void *);
+	void (*store)(void *, F32);
+};
+
+static ALWAYS_INLINE void audio_process(void *restrict p_output, const void *restrict p_input, UPTR o_stride_bytes, UPTR i_stride_bytes, U32 o_duplication, U32 frame_count_ma, BOOL_IN do_visualize, U8 callbackdata, F32 *p_samples_ri, F32 *p_dft_ri, F32 *p_invsamples_ri, F32 *p_tmp_inv_samples, F32 *p_extended_dft, F32 *p_fft_buffer_original, F32 *p_fft_buffer_processed, U32 *p_fft_phase_frames, const struct rt_audio_callback_param *restrict param)
 {
 
 #if 0
@@ -97,7 +96,7 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 	F32 invsamples_ri[(1uLL << FFT_K) * 2];
 #endif
 
-	U32 nn = 1uLL << fft_k;
+	U32 nn = 1uLL << param->fft_k;
 	U32 nn4 = nn / 4;
 
 	for (U32 i = 0; i < nn; ++i) {
@@ -134,22 +133,21 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 		capture_iter = p_fft_buffer_original + nn4 + (*p_fft_phase_frames / nn4 + 2) % 3 * nn4 + *p_fft_phase_frames % nn4;
 
 		for (U32 i = 0; i < n_curr_frames; ++i) {
-			capture_iter[i] = (*load)((const char *)p_input_iter + i * i_stride_bytes);
+			capture_iter[i] = (*param->load)((const char *)p_input_iter + i * i_stride_bytes);
 		}
 		for (U32 i = 0; i < n_curr_frames; ++i) {
 			F32 lp_curr = playback_iter[i];
 			lp_prev = lp_prev * alpha + lp_curr * (1 - alpha);
 			for (U32 j = 0; j < o_duplication; ++j) {
-				(*store)((char *)p_output_iter + i * o_stride_bytes + j * o_sizeof, min_f32(max_f32(lp_prev, -1), 1));
+				(*param->store)((char *)p_output_iter + i * o_stride_bytes + j * param->o_sizeof, min_f32(max_f32(lp_prev, -1), 1));
 			}
-
 		}
 
 		if (do_visualize) {
 			naive_memmove(buffer_for_visualization, buffer_for_visualization + n_curr_frames, (ARRAY_LENGTH(buffer_for_visualization) - n_curr_frames) * sizeof *buffer_for_visualization);
 			for (U32 i = 0; i < n_curr_frames; ++i) {
 				buffer_for_visualization[ARRAY_LENGTH(buffer_for_visualization) + i - n_curr_frames] =
-				    (*load_back)((char *)p_output_iter + i * o_stride_bytes);
+				    (*param->load_back)((char *)p_output_iter + i * o_stride_bytes);
 			}
 		}
 
@@ -182,10 +180,10 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 				}
 			}
 
-			fft_f32_outofplace(p_dft_ri, p_samples_ri, fft_k, 0);
+			fft_f32_outofplace(p_dft_ri, p_samples_ri, param->fft_k, 0);
 
 			/* including! */
-			U32 n = (1uLL << fft_k) / 2;
+			U32 n = (1uLL << param->fft_k) / 2;
 
 			U8 do_shift = ((7 << 1) & callbackdata) >> 1;
 
@@ -304,7 +302,7 @@ static ALWAYS_INLINE void audio_process(void *p_output, const void *p_input, UPT
 				p_dft_ri[i * 2 + 1] = -p_dft_ri[(nn - i) * 2 + 1];
 			}
 
-			fft_f32_outofplace(p_invsamples_ri, p_dft_ri, fft_k, 1);
+			fft_f32_outofplace(p_invsamples_ri, p_dft_ri, param->fft_k, 1);
 
 #if 0
 			ALIGNAS(SIMD_NBYTES_FAST)
@@ -373,9 +371,8 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 						 void *restrict p_output,
 						 const void *restrict p_input,
 						 ma_uint32 frame_count_ma_param,
-						 U32 fft_k, F32 *p_samples_ri, F32 *p_dft_ri, F32 *p_invsamples_ri,
-						 F32 *p_tmp_inv_samples, F32 *p_extended_dft, U32 n_active_channels, U32 n_all_channels, UPTR o_sizeof, UPTR i_sizeof,
-						 F32 (*load)(const void *), F32 (*load_back)(const void *), void (*store)(void *, F32))
+						 F32 *p_samples_ri, F32 *p_dft_ri, F32 *p_invsamples_ri,
+						 F32 *p_tmp_inv_samples, F32 *p_extended_dft, const struct rt_audio_callback_param *restrict param)
 {
 	full_memory_fence();
 	U8 callbackdata = ATOMIC_FETCH_OR(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, 1u << 7, ATOMIC_ACQ_REL);
@@ -384,17 +381,17 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 
 	(void)p_device;
 
-	U32 nn = 1uLL << fft_k;
+	U32 nn = 1uLL << param->fft_k;
 
-	if (n_active_channels == 1) {
-		audio_process(p_output, p_input, REQUESTED_PLAYBACK_N_CHANNELS * o_sizeof, n_all_channels * i_sizeof, REQUESTED_PLAYBACK_N_CHANNELS, frame_count_ma, 1,
+	if (param->n_active_channels == 1) {
+		audio_process(p_output, p_input, REQUESTED_PLAYBACK_N_CHANNELS * param->o_sizeof, param->n_all_channels * param->i_sizeof, REQUESTED_PLAYBACK_N_CHANNELS, frame_count_ma, 1,
 			      callbackdata,
-			      fft_k, p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original, fft_buffer_processed, fft_phase_frames, o_sizeof, load, load_back, store);
-	} else if (n_active_channels == REQUESTED_PLAYBACK_N_CHANNELS) {
+			      p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original, fft_buffer_processed, fft_phase_frames, param);
+	} else if (param->n_active_channels == REQUESTED_PLAYBACK_N_CHANNELS) {
 		for (U32 i = 0; i < REQUESTED_PLAYBACK_N_CHANNELS; ++i) {
-			audio_process((char *)p_output + o_sizeof * i, (char *)p_input + i_sizeof * i,
-				      REQUESTED_PLAYBACK_N_CHANNELS * o_sizeof, n_all_channels * i_sizeof, 1, frame_count_ma, i == 0, callbackdata,
-				      fft_k, p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original + i * (1uLL << MAX_K), fft_buffer_processed + i * (1uLL << MAX_K), fft_phase_frames + i, o_sizeof, load, load_back, store);
+			audio_process((char *)p_output + param->o_sizeof * i, (char *)p_input + param->i_sizeof * i,
+				      REQUESTED_PLAYBACK_N_CHANNELS * param->o_sizeof, param->n_all_channels * param->i_sizeof, 1, frame_count_ma, i == 0, callbackdata,
+				      p_samples_ri, p_dft_ri, p_invsamples_ri, p_tmp_inv_samples, p_extended_dft, fft_buffer_original + i * (1uLL << MAX_K), fft_buffer_processed + i * (1uLL << MAX_K), fft_phase_frames + i, param);
 		}
 	} else {
 		assert(0);
@@ -421,7 +418,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 			p_samples_ri[(nn - i - 1) * 2 + 0] *= tmp;
 		}
 
-		fft_f32_outofplace(p_dft_ri, p_samples_ri, fft_k, 0);
+		fft_f32_outofplace(p_dft_ri, p_samples_ri, param->fft_k, 0);
 
 		for (U32 i = 0; i < 1 << 10; i += SIMD_N_32) {
 			F32_VEC result;
@@ -434,7 +431,7 @@ static ALWAYS_INLINE void rt_audio_callback_impl(ma_device *restrict p_device,
 				tmp1[j] = p_dft_ri[(i + j) * 2 + 1];
 			}
 
-			result = sqrt_f32x(tmp0 * tmp0 + tmp1 * tmp1) / simd_f32x(1024) * simd_f32x((F32)(S32)((1 << MAX_K) / (1 << fft_k))) - simd_f32x(1);
+			result = sqrt_f32x(tmp0 * tmp0 + tmp1 * tmp1) / simd_f32x(1024) * simd_f32x((F32)(S32)((1 << MAX_K) / (1 << param->fft_k))) - simd_f32x(1);
 
 			for (U32 j = 0; j < SIMD_N_32; ++j) {
 				for (U32 k = 0; k < (1 << MAX_K) / (1 << 10); ++k) {
@@ -529,47 +526,50 @@ static ALWAYS_INLINE void audio_store_f32(void *p, F32 v)
 	*(F32 *)p = v;
 }
 
-#define GENERATE_rt_audio_callback(in, out, fft_k, i_sizeofbits, o_sizeofbits, n_active_channels, n_all_channels)                       \
-	NOINLINE void rt_audio_callback_##in##_##out##_##fft_k##_##n_active_channels##_##n_all_channels(ma_device *restrict p_device,   \
-													void *restrict p_output,        \
-													const void *restrict p_input,   \
-													ma_uint32 frame_count_ma_param) \
-	{                                                                                                                               \
-		ALIGNAS(SIMD_NBYTES)                                                                                                    \
-		F32 samples_ri[(1uLL << fft_k) * 2];                                                                                    \
-                                                                                                                                        \
-		ALIGNAS(SIMD_NBYTES)                                                                                                    \
-		F32 dft_ri[(1uLL << fft_k) * 2];                                                                                        \
-                                                                                                                                        \
-		ALIGNAS(SIMD_NBYTES)                                                                                                    \
-		F32 invsamples_ri[(1uLL << fft_k) * 2];                                                                                 \
-                                                                                                                                        \
-		ALIGNAS(SIMD_NBYTES)                                                                                                    \
-		F32 tmp_inv_samples[(1uLL << fft_k) / 4];                                                                               \
-                                                                                                                                        \
-		F32 extended_dft[(1uLL << fft_k) / 2 * 4 * 2];                                                                          \
-                                                                                                                                        \
-		STATIC_ASSERT(fft_k >= 8);                                                                                              \
-                                                                                                                                        \
+#define GENERATE_rt_audio_callback(in, out, param_fft_k, i_sizeofbits, o_sizeofbits, param_n_active_channels, param_n_all_channels)                       \
+	NOINLINE void rt_audio_callback_##in##_##out##_##param_fft_k##_##param_n_active_channels##_##param_n_all_channels(ma_device *restrict p_device,   \
+															  void *restrict p_output,        \
+															  const void *restrict p_input,   \
+															  ma_uint32 frame_count_ma_param) \
+	{                                                                                                                                                 \
+		ALIGNAS(SIMD_NBYTES)                                                                                                                      \
+		F32 samples_ri[(1uLL << param_fft_k) * 2];                                                                                                \
+                                                                                                                                                          \
+		ALIGNAS(SIMD_NBYTES)                                                                                                                      \
+		F32 dft_ri[(1uLL << param_fft_k) * 2];                                                                                                    \
+                                                                                                                                                          \
+		ALIGNAS(SIMD_NBYTES)                                                                                                                      \
+		F32 invsamples_ri[(1uLL << param_fft_k) * 2];                                                                                             \
+                                                                                                                                                          \
+		ALIGNAS(SIMD_NBYTES)                                                                                                                      \
+		F32 tmp_inv_samples[(1uLL << param_fft_k) / 4];                                                                                           \
+                                                                                                                                                          \
+		F32 extended_dft[(1uLL << param_fft_k) / 2 * 4 * 2];                                                                                      \
+                                                                                                                                                          \
+		STATIC_ASSERT(param_fft_k >= 8);                                                                                                          \
+                                                                                                                                                          \
+		struct rt_audio_callback_param param;                                                                                                     \
+		param.fft_k = param_fft_k;                                                                                                                \
+		param.i_sizeof = i_sizeofbits / CHAR_BIT;                                                                                                 \
+		param.o_sizeof = o_sizeofbits / CHAR_BIT;                                                                                                 \
+		param.load = audio_load_##in;                                                                                                             \
+		param.load_back = audio_load_##out;                                                                                                       \
+		param.store = audio_store_##out;                                                                                                          \
+		param.n_all_channels = param_n_all_channels;                                                                                              \
+		param.n_active_channels = param_n_active_channels;                                                                                        \
+                                                                                                                                                          \
 		/* clang-format off */ \
 		rt_audio_callback_impl(p_device, \
 			p_output, \
 			p_input, \
 			frame_count_ma_param, \
-			fft_k, \
 			samples_ri, \
 			dft_ri, \
 			invsamples_ri, \
 			tmp_inv_samples, \
 			extended_dft, \
-			n_active_channels, \
-			n_all_channels, \
-			o_sizeofbits / CHAR_BIT, \
-			i_sizeofbits / CHAR_BIT, \
-			audio_load_##in, \
-			audio_load_##out, \
-			audio_store_##out);                                                                                                \
-		/* clang-format on */                                                                                                   \
+			&param);                                                                                                                  \
+		/* clang-format on */                                                                                                                     \
 	}
 
 /*
