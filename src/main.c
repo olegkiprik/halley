@@ -425,7 +425,8 @@ U32 fft_phase_frames[2];
 pthread_mutex_t vert_mutex = PTHREAD_MUTEX_INITIALIZER;
 int tmpphase = 0;
 
-F32 lp_prev = 0;
+F32 lp_in_prev = 0;
+F32 lp_out_prev = 0;
 
 ALIGNAS(SIMD_NBYTES)
 F32 fft_buffer_original[(1uLL << MAX_K) * 2];
@@ -1313,7 +1314,8 @@ static ALWAYS_INLINE int submain(void)
 	ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.data, &audio_thread_data.data, 14, ATOMIC_RELEASE);
 
 	u32_f32_conv.f32 = 0;
-	ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha_f32, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+	ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha_f32, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+	ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha_f32, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 
 	full_memory_fence();
 	if (RARELY(MA_SUCCESS != ma_device_start(&device))) {
@@ -1383,52 +1385,102 @@ static ALWAYS_INLINE int submain(void)
 				 * x0 * a^2   + x1 * a * (1-a) + x2 * (a^0.5 - a) + x2 * (1-a^0.5) = x0 * a^2 + x1 * a * (1-a) + x2 * (1-a)
 				 */
 				u32_f32_conv.f32 = 0.0f;
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key1: {
 				u32_f32_conv.f32 = naive_exp_iter_f32(-77253.0198f / device.playback.internalSampleRate, 5);
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key2: {
 				u32_f32_conv.f32 = naive_exp_iter_f32(-43981.95513f / device.playback.internalSampleRate, 5);
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key3: {
 				u32_f32_conv.f32 = naive_exp_iter_f32(-24519.62994f / device.playback.internalSampleRate, 5);
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key4: {
 				u32_f32_conv.f32 = naive_exp_iter_f32(-17120.3973f / device.playback.internalSampleRate, 5);
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key5: {
 				u32_f32_conv.f32 = naive_exp_iter_f32(-10710.890463f / device.playback.internalSampleRate, 5);
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key6: {
 				u32_f32_conv.f32 = naive_exp_iter_f32(-5057.30475f / device.playback.internalSampleRate, 5);
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key7: {
 				u32_f32_conv.f32 = naive_exp_iter_f32(-2462.07813f / device.playback.internalSampleRate, 5);
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key8: {
 				u32_f32_conv.f32 = naive_exp_iter_f32(-969.72995f / device.playback.internalSampleRate, 5);
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modShift << 8 | RGFW_key9: {
 				u32_f32_conv.f32 = naive_exp_iter_f32(-482.41612f / device.playback.internalSampleRate, 5);
-				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_alpha, &audio_thread_data.lp_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_out_alpha, &audio_thread_data.lp_out_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key0: {
+				u32_f32_conv.f32 = 0.0f;
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key1: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-77253.0198f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key2: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-43981.95513f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key3: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-24519.62994f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key4: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-17120.3973f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key5: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-10710.890463f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key6: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-5057.30475f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key7: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-2462.07813f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key8: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-969.72995f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
+				break;
+			}
+			case (U32)RGFW_keyPressed << 16 | (U32)RGFW_modControl << 8 | RGFW_key9: {
+				u32_f32_conv.f32 = naive_exp_iter_f32(-482.41612f / device.playback.internalSampleRate, 5);
+				ATOMIC_STORE(CHAR_BIT * sizeof audio_thread_data.lp_in_alpha, &audio_thread_data.lp_in_alpha_f32, u32_f32_conv.u32, ATOMIC_RELEASE);
 				break;
 			}
 			case (U32)RGFW_keyPressed << 16 | RGFW_key1: {

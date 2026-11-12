@@ -576,6 +576,8 @@ typedef __bf16            MAY_ALIAS priv___bf16_may_alias_t;
  * convenience
  */
 
+#define DEFER_FOR(iptr, expr) for (*(iptr) = 0; *(iptr) != 1; expr, *(iptr) = 1)
+
 #define ARRAY_LENGTH(x) (sizeof(x) / sizeof *(x))
 
 #define SIMD_REFER_1(x) (&(x))
